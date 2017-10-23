@@ -1,5 +1,7 @@
 package com.example.tfs_exchange.adapter;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 
 
 import com.example.tfs_exchange.Currency;
+import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.R;
 
 import java.util.List;
@@ -27,6 +30,9 @@ import static com.example.tfs_exchange.R.drawable.favorite_star;
  * **/
 
 public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRecyclerListAdapter.ViewHolder> {
+
+    private DBHelper dbHelper;
+
 
     //Список валют
     private List<Currency> currencies;
@@ -106,13 +112,21 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
 
         @Override
         public void onClick(View view) {
-            if (!currency.isFavorite())
+            dbHelper = new DBHelper(view.getContext());
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            ContentValues cv = new ContentValues();
+            int changeFavorite;
+            if (currency.isFavorite())
             {
-                replaceToFavorite(currency);
-            } else {
-
                 replaceToNotFavorite(currency);
+                changeFavorite = 0;
+            } else {
+                replaceToFavorite(currency);
+                changeFavorite = 1;
             }
+            cv.put("FAVORITE", changeFavorite);
+            db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
+
         }
 
         public void setCurrency(Currency currency) {
@@ -121,6 +135,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
     }
 
     private void replaceToFavorite (Currency currency) {
+
         int position = currencies.indexOf(currency);
         currency.setFavorite(true);
         notifyItemChanged(position);

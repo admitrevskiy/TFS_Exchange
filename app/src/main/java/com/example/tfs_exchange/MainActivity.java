@@ -26,10 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
         List<Currency> currencies = new ArrayList<Currency>();
 
-
-
-
-        populateRecords(currencies);
+        populateCurrencies(currencies);
 
         RecyclerView recyclerView = (RecyclerView)findViewById(R.id.recyclerView);
         CurrencyRecyclerListAdapter adapter = new CurrencyRecyclerListAdapter(currencies);
@@ -41,49 +38,49 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(itemAnimator);
     }
 
+    //Добавляем валюты в список из БД
+    private void populateCurrencies(List<Currency> currencies){
 
-
-    private void populateRecords(List<Currency> currencies){
-
+        //подключаем Data Base Helper, получаем из него БД для чтения
         dbHelper = new DBHelper(getApplicationContext());
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
+        //Создаем курсор
         Cursor cursor = db.query("currency_name", null, null, null, null, null, null);
 
+        //Если БД не пустая
         if (cursor.moveToFirst()) {
+            //Находим индексы колонок
             int baseColId = cursor.getColumnIndex("currency_base");
             int lastUsedColId = cursor.getColumnIndex("last_used");
             int favoriteColId = cursor.getColumnIndex("favorite");
 
             do {
+                //Создаем объект типа Currency и присваиваем ему значения из БД
+
+                //String name = cursor.getString(baseColId);
+
                 Currency currency = new Currency();
                 currency.setName(cursor.getString(baseColId));
                 currency.setLastUse(cursor.getInt(lastUsedColId));
                 int favorite = cursor.getInt(favoriteColId);
+
+                //В SQLite нет типа boolean, поэтому НЕ избранные валюты имеют в колонке favorite 0, а избранные 1
                 if (favorite == 0)
                 {
                     currency.setFavorite(false);
                 } else {
                     currency.setFavorite(true);
                 }
+
+                //Добавляем валюту в List с валютами
                 currencies.add(currency);
             } while (cursor.moveToNext());
         }
 
+
+        //Закрываем БД
         db.close();
-
-
-        /**
-        Currency currency1 = new Currency("USD", 400, false);
-        currencies.add(currency1);
-
-        Currency currency2 = new Currency("RUB", 400, false);
-        currencies.add(currency2);
-
-        Currency currency3 = new Currency("KRN", 400, false);
-        currencies.add(currency3);
-         **/
-
     }
 }
 
