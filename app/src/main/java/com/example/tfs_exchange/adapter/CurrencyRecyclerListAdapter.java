@@ -1,18 +1,21 @@
 package com.example.tfs_exchange.adapter;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 
 import com.example.tfs_exchange.Currency;
 import com.example.tfs_exchange.DBHelper;
+import com.example.tfs_exchange.ExchangeActivity;
+import com.example.tfs_exchange.MainActivity;
 import com.example.tfs_exchange.R;
 
 import java.util.List;
@@ -27,6 +30,7 @@ import static com.example.tfs_exchange.R.drawable.favorite_star;
  * Читать https://habrahabr.ru/post/237101/
  * http://www.vogella.com/tutorials/AndroidListView/article.html#adapterperformance
  * https://developer.android.com/reference/android/app/ListFragment.html
+ * https://antonioleiva.com/recyclerview-listener/
  * **/
 
 public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRecyclerListAdapter.ViewHolder> {
@@ -38,23 +42,33 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
     private List<Currency> currencies;
 
     //Нажатие, долгое нажатие, выбор избранных валют
-    AdapterView.OnItemClickListener itemClickListener;
-    AdapterView.OnItemLongClickListener itemLongClickListener;
-    AdapterView.OnItemClickListener favoriteClickListener;
+    View.OnClickListener itemClickListener;
+    View.OnLongClickListener itemLongClickListener;
+    OnItemClickListener favoriteClickListener;
 
     //Конструктор
     public CurrencyRecyclerListAdapter(List<Currency> currencies,
-                                       AdapterView.OnItemClickListener itemClickListener,
-                                       AdapterView.OnItemLongClickListener itemLongClickListener,
-                                       AdapterView.OnItemClickListener favoriteClickListener) {
+                                       View.OnClickListener itemClickListener,
+                                       View.OnLongClickListener itemLongClickListener) {
         this.currencies = currencies;
         this.itemClickListener = itemClickListener;
         this.itemLongClickListener = itemLongClickListener;
-        this.favoriteClickListener = favoriteClickListener;
+        //this.favoriteClickListener = favoriteClickListener;
     }
+
+    public interface OnItemClickListener {
+
+        void onItemClick(Currency currency);
+    }
+
 
     public CurrencyRecyclerListAdapter(List<Currency> currencies) {
         this.currencies = currencies;
+    }
+
+    public CurrencyRecyclerListAdapter(List<Currency> currencies, OnItemClickListener favoriteClickListener) {
+        this.currencies = currencies;
+        this.favoriteClickListener = favoriteClickListener;
     }
 
     //Создаем ViewHolder
@@ -71,6 +85,9 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Currency currency = currencies.get(position);
+
+        holder.currencyName.setText(currency.getName());
+
         int iconResourceId = 0;
 
         //Выбираем иконку - избранная валюта или нет.
@@ -79,9 +96,8 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
         } else {
             iconResourceId = favorite_star;
         }
-        holder.currencyName.setText(currency.getName());
         holder.favoriteButton.setImageResource(iconResourceId);
-        holder.favoriteButtonListener.setCurrency(currency);
+        holder.bind(currencies.get(position), favoriteClickListener);
     }
 
     //Размер списка
@@ -95,55 +111,23 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
 
         TextView currencyName;
         ImageButton favoriteButton;
-        private FavoriteButtonListener favoriteButtonListener;
+
 
         public ViewHolder(View itemView) {
             super(itemView);
-
             currencyName = itemView.findViewById(R.id.currencyItemTextView);
             favoriteButton = itemView.findViewById(R.id.selectFavoriteCurrencyButton);
-            favoriteButtonListener = new FavoriteButtonListener();
-            favoriteButton.setOnClickListener(favoriteButtonListener);
+        }
+
+        public void bind(final Currency currency, final OnItemClickListener listener) {
+            favoriteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onItemClick(currency);
+                }
+            });
+
         }
     }
 
-    private class FavoriteButtonListener implements View.OnClickListener {
-        private Currency currency;
-
-        @Override
-        public void onClick(View view) {
-            dbHelper = new DBHelper(view.getContext());
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-            ContentValues cv = new ContentValues();
-            int changeFavorite;
-            if (currency.isFavorite())
-            {
-                replaceToNotFavorite(currency);
-                changeFavorite = 0;
-            } else {
-                replaceToFavorite(currency);
-                changeFavorite = 1;
-            }
-            cv.put("FAVORITE", changeFavorite);
-            db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
-
-        }
-
-        public void setCurrency(Currency currency) {
-            this.currency = currency;
-        }
-    }
-
-    private void replaceToFavorite (Currency currency) {
-
-        int position = currencies.indexOf(currency);
-        currency.setFavorite(true);
-        notifyItemChanged(position);
-    }
-
-    private void replaceToNotFavorite (Currency currency) {
-        int position = currencies.indexOf(currency);
-        currency.setFavorite(false);
-        notifyItemChanged(position);
-    }
 }
