@@ -1,8 +1,5 @@
 package com.example.tfs_exchange.adapter;
 
-import android.content.ContentValues;
-import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,8 +11,6 @@ import android.widget.TextView;
 
 import com.example.tfs_exchange.Currency;
 import com.example.tfs_exchange.DBHelper;
-import com.example.tfs_exchange.ExchangeActivity;
-import com.example.tfs_exchange.MainActivity;
 import com.example.tfs_exchange.R;
 
 import java.util.List;

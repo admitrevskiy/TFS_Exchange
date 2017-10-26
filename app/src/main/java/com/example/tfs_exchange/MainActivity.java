@@ -1,7 +1,6 @@
 package com.example.tfs_exchange;
 
 import android.content.ContentValues;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
@@ -10,20 +9,16 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
 
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
-import com.example.tfs_exchange.listeners.FavoriteButtonListener;
+import com.example.tfs_exchange.comparators.FavoriteComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import butterknife.BindView;
 
 public class MainActivity extends AppCompatActivity {
 

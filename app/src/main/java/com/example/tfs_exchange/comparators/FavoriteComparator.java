@@ -1,4 +1,6 @@
-package com.example.tfs_exchange;
+package com.example.tfs_exchange.comparators;
+
+import com.example.tfs_exchange.Currency;
 
 import java.util.Comparator;
 
