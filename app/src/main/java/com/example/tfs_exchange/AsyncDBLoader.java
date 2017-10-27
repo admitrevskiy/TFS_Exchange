@@ -4,7 +4,8 @@ package com.example.tfs_exchange;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.content.AsyncTaskLoader;
+
+import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
 import com.example.tfs_exchange.Currency;

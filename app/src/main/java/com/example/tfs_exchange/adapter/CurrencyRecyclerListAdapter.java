@@ -37,13 +37,13 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
     private List<Currency> currencies;
 
     //Нажатие, долгое нажатие, выбор избранных валют
-    View.OnClickListener itemClickListener;
+    OnItemClickListener itemClickListener;
     View.OnLongClickListener itemLongClickListener;
     OnItemClickListener favoriteClickListener;
 
     //Конструктор
     public CurrencyRecyclerListAdapter(List<Currency> currencies,
-                                       View.OnClickListener itemClickListener,
+                                       OnItemClickListener itemClickListener,
                                        View.OnLongClickListener itemLongClickListener) {
         this.currencies = currencies;
         this.itemClickListener = itemClickListener;
@@ -64,6 +64,12 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
     public CurrencyRecyclerListAdapter(List<Currency> currencies, OnItemClickListener favoriteClickListener) {
         this.currencies = currencies;
         this.favoriteClickListener = favoriteClickListener;
+    }
+
+    public CurrencyRecyclerListAdapter(List<Currency> currencies, OnItemClickListener favoriteClickListener, OnItemClickListener itemClickListener) {
+        this.currencies = currencies;
+        this.favoriteClickListener = favoriteClickListener;
+        this.itemClickListener = itemClickListener;
     }
 
     //Создаем ViewHolder
@@ -92,7 +98,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
             iconResourceId = favorite_star;
         }
         holder.favoriteButton.setImageResource(iconResourceId);
-        holder.bind(currencies.get(position), favoriteClickListener);
+        holder.bind(currencies.get(position), favoriteClickListener, itemClickListener);
     }
 
     //Размер списка
@@ -114,11 +120,17 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
             favoriteButton = itemView.findViewById(R.id.selectFavoriteCurrencyButton);
         }
 
-        public void bind(final Currency currency, final OnItemClickListener listener) {
+        public void bind(final Currency currency, final OnItemClickListener favoriteListener, final OnItemClickListener itemClickListener) {
             favoriteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onItemClick(currency);
+                    favoriteListener.onItemClick(currency);
+                }
+            });
+            currencyName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    itemClickListener.onItemClick(currency);
                 }
             });
 
