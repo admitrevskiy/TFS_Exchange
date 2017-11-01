@@ -11,8 +11,8 @@ import java.util.Comparator;
 public class LastUsedComparator implements Comparator<Currency> {
     @Override
     public int compare(Currency currency1, Currency currency2) {
-        if (currency1.getLastUse() < currency2.getLastUse()) return -1;
-        else if (currency1.getLastUse() > currency2.getLastUse()) return 1;
+        if (currency1.getLastUse() < currency2.getLastUse()) return 1;
+        else if (currency1.getLastUse() > currency2.getLastUse()) return -1;
         else return 0;
     }
 }

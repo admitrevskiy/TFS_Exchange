@@ -5,8 +5,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.ImageButton;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 
 import com.example.tfs_exchange.Currency;
@@ -14,6 +16,7 @@ import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.R;
 
 import java.util.List;
+
 
 import static com.example.tfs_exchange.R.drawable.favorite_star;
 
@@ -38,22 +41,28 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
 
     //Нажатие, долгое нажатие, выбор избранных валют
     OnItemClickListener itemClickListener;
-    View.OnLongClickListener itemLongClickListener;
+    OnItemLongClickListener itemLongClickListener;
     OnItemClickListener favoriteClickListener;
 
     //Конструктор
     public CurrencyRecyclerListAdapter(List<Currency> currencies,
+                                       OnItemClickListener favoriteClickListener,
                                        OnItemClickListener itemClickListener,
-                                       View.OnLongClickListener itemLongClickListener) {
+                                       OnItemLongClickListener itemLongClickListener) {
         this.currencies = currencies;
         this.itemClickListener = itemClickListener;
         this.itemLongClickListener = itemLongClickListener;
-        //this.favoriteClickListener = favoriteClickListener;
+        this.favoriteClickListener = favoriteClickListener;
     }
 
     public interface OnItemClickListener {
 
         void onItemClick(Currency currency);
+    }
+
+    public interface OnItemLongClickListener {
+
+        void onItemLongClick(Currency currency, int id);
     }
 
 
@@ -98,7 +107,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
             iconResourceId = favorite_star;
         }
         holder.favoriteButton.setImageResource(iconResourceId);
-        holder.bind(currencies.get(position), favoriteClickListener, itemClickListener);
+        holder.bind(currencies.get(position), favoriteClickListener, itemClickListener, itemLongClickListener, position);
     }
 
     //Размер списка
@@ -120,7 +129,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
             favoriteButton = itemView.findViewById(R.id.selectFavoriteCurrencyButton);
         }
 
-        public void bind(final Currency currency, final OnItemClickListener favoriteListener, final OnItemClickListener itemClickListener) {
+        public void bind(final Currency currency, final OnItemClickListener favoriteListener, final OnItemClickListener itemClickListener, final OnItemLongClickListener onItemLongClickListener, final int id) {
             favoriteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -131,6 +140,13 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
                 @Override
                 public void onClick(View v) {
                     itemClickListener.onItemClick(currency);
+                }
+            });
+            currencyName.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    itemLongClickListener.onItemLongClick(currency, id);
+                    return false;
                 }
             });
 

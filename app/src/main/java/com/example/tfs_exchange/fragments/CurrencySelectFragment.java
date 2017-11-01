@@ -22,6 +22,10 @@ import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
+import com.example.tfs_exchange.comparators.LastUsedComparator;
+
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,10 +33,12 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnItemLongClick;
 
 /**
  * Created by pusya on 27.10.17.
@@ -42,17 +48,19 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     public static final int LOADER_ID = 1;
 
     private final static String CURRENCY_TAG = "currency";
-
-    private final static String TAG = "MainActivity";
-
+    private final static String TAG = "CurrencySelectFragment";
+    private ContentValues cv;
+    private SQLiteDatabase db;
     private DBHelper dbHelper;
+    private FavoriteComparator faveComp;
+    private LastUsedComparator lastUsedComp;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
 
-    CurrencyRecyclerListAdapter adapter;
+    private CurrencyRecyclerListAdapter adapter;
 
-    final List<Currency> currencies = new ArrayList<Currency>();
+    private final List<Currency> currencies = new ArrayList<Currency>();
 
     @Nullable
     @Override
@@ -61,46 +69,32 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
 
         ButterKnife.bind(this, firstFragmentRootView);
 
-        //final List<Currency> currencies = new ArrayList<Currency>();
+        faveComp = new FavoriteComparator();
+        lastUsedComp = new LastUsedComparator();
 
-        /** Загрузка валют из БД происходит асинхронно! **/
+        /** Загрузка валют из БД происходит асинхронно **/
         getLoaderManager().initLoader(LOADER_ID, null, this);
-        //Loader<List<Currency>> loader;
         Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
         loader.forceLoad();
-
-        //populateCurrencies(currencies);
-
-        //final RecyclerView recyclerView = (RecyclerView)findViewById(R.id.recyclerView);
+        
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                dbHelper = new DBHelper(getContext());
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-                ContentValues cv = new ContentValues();
-                int changeFavorite;
-                if (currency.isFavorite())
-                {
-                    currency.setFavorite(false);
-                    changeFavorite = 0;
-                } else {
-                    currency.setFavorite(true);
-                    changeFavorite = 1;
-                }
-                cv.put("FAVORITE", changeFavorite);
-                db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
-                Log.d(CURRENCY_TAG, " " + currency.getName() + " favorite changed" );
-
-                //Сортируем избранные валюты вверх по списку
-                Collections.sort(currencies, new FavoriteComparator());
-                //Обновляем RecycleView, меняем "пустую" звездочку на "избранную
-                adapter.notifyDataSetChanged();
+                setFaveToDB(currency);
+                Log.d("Currency item ", " " + currency.getName() + " fave changed");
             }
 
         }, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                Log.d("Currency item ", " " + currency.getName() + " short clicked" );
+                Log.d("Currency item ", " " + currency.getName() + " short clicked");
+                setTimeToDB(currency);
+            }
+        }, new  CurrencyRecyclerListAdapter.OnItemLongClickListener() {
+            @Override
+            public void onItemLongClick(Currency currency, int id) {
+                Log.d("Currency item ", currency.getName() + " long clicked" );
+                setTimeToDB(currency);
             }
         });
 
@@ -138,5 +132,47 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onLoaderReset(Loader<List<Currency>> loader) {
         Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
+    }
+
+    private void setFaveToDB(Currency currency) {
+        dbHelper = new DBHelper(getContext());
+        db = dbHelper.getWritableDatabase();
+        cv = new ContentValues();
+        int changeFavorite;
+        if (currency.isFavorite())
+        {
+            currency.setFavorite(false);
+            changeFavorite = 0;
+        } else {
+            currency.setFavorite(true);
+            changeFavorite = 1;
+        }
+        cv.put("FAVORITE", changeFavorite);
+        db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
+        Log.d(CURRENCY_TAG, " " + currency.getName() + " favorite changed" );
+
+        //Сортируем избранные валюты вверх по списку
+        Collections.sort(currencies, lastUsedComp);
+        Collections.sort(currencies, faveComp);
+        //Обновляем RecycleView, меняем "пустую" звездочку на "избранную
+        adapter.notifyDataSetChanged();
+    }
+
+    private void setTimeToDB(Currency currency) {
+        dbHelper = new DBHelper(getContext());
+        db = dbHelper.getWritableDatabase();
+        cv = new ContentValues();
+        long lastUse = new Date().getTime();
+        int time = (int)lastUse/1000;
+        currency.setLastUse(lastUse);
+        cv.put("LAST_USED", time);
+        db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
+        Log.d(CURRENCY_TAG, " " + currency.getName() + " lastUsed changed" );
+
+        //Сортируем избранные валюты вверх по списку
+        Collections.sort(currencies, lastUsedComp);
+        Collections.sort(currencies, faveComp);
+
+        adapter.notifyDataSetChanged();
     }
 }
