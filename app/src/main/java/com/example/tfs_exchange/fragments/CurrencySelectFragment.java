@@ -3,6 +3,8 @@ package com.example.tfs_exchange.fragments;
 
 
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -58,6 +60,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     private LastUsedComparator lastUsedComp;
     private LongClickedComparator longClickedComp;
     private boolean noItemLongClicked;
+    private Currency longClickedCurrency;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -75,6 +78,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         super.onPause();
         sortCurrencies();
         noItemLongClicked = true;
+        longClickedCurrency = null;
     }
 
     @Nullable
@@ -107,6 +111,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void onItemClick(Currency currency) {
                 Log.d("Currency item ", " " + currency.getName() + " short clicked");
+                replaceExchangeFragment("USD", "EUR");
                 setTimeToDB(currency);
             }
         }, new  CurrencyRecyclerListAdapter.OnItemLongClickListener() {
@@ -119,6 +124,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
                     currency.setLongClicked(false);
                     adapter.notifyDataSetChanged();
                     noItemLongClicked = false;
+                    longClickedCurrency = currency;
                     setTimeToDB(currency);
                 }
                 else {
@@ -204,6 +210,18 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         Collections.sort(currencies, faveComp);
 
         adapter.notifyDataSetChanged();
+    }
+
+    private void replaceExchangeFragment(String currencyFrom, String currencyTo) {
+        ExchangeFragment fragment = new ExchangeFragment();
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        Bundle bundle = new Bundle();
+        bundle.putStringArray("currencies", new String[]{currencyFrom, currencyTo});
+        fragment.setArguments(bundle);
+        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.addToBackStack(TAG);
+        fragmentTransaction.commit();
     }
 
 }
