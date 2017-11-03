@@ -22,6 +22,7 @@ import android.util.Log;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
 import com.example.tfs_exchange.fragments.CurrencySelectFragment;
+import com.example.tfs_exchange.fragments.ExchangeFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,9 +45,12 @@ public class MainActivity extends FragmentActivity {
 
         ButterKnife.bind(this);
 
-
+        /**
         CurrencySelectFragment fragment1 = new CurrencySelectFragment();
         addFragment(fragment1);
+         **/
+        CurrencySelectFragment fragment = new CurrencySelectFragment();
+        addFragment(fragment);
 
     }
 

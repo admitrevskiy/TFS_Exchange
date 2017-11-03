@@ -23,6 +23,7 @@ import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
 import com.example.tfs_exchange.comparators.LastUsedComparator;
+import com.example.tfs_exchange.comparators.LongClickedComparator;
 
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -30,6 +31,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,13 +56,26 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     private DBHelper dbHelper;
     private FavoriteComparator faveComp;
     private LastUsedComparator lastUsedComp;
+    private LongClickedComparator longClickedComp;
+    private boolean noItemLongClicked;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
 
+    //@BindView(R.id.selected_currency)
+    //TextView seletcedCurrency;
+
     private CurrencyRecyclerListAdapter adapter;
 
     private final List<Currency> currencies = new ArrayList<Currency>();
+
+    @Nullable
+    @Override
+    public void onPause() {
+        super.onPause();
+        sortCurrencies();
+        noItemLongClicked = true;
+    }
 
     @Nullable
     @Override
@@ -71,11 +86,15 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
 
         faveComp = new FavoriteComparator();
         lastUsedComp = new LastUsedComparator();
+        longClickedComp = new LongClickedComparator();
+
+        noItemLongClicked = true;
 
         /** Загрузка валют из БД происходит асинхронно **/
         getLoaderManager().initLoader(LOADER_ID, null, this);
         Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
         loader.forceLoad();
+        /** ------------------------------------------**/
         
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
@@ -93,11 +112,24 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         }, new  CurrencyRecyclerListAdapter.OnItemLongClickListener() {
             @Override
             public void onItemLongClick(Currency currency, int id) {
-                Log.d("Currency item ", currency.getName() + " long clicked" );
-                setTimeToDB(currency);
+                if (noItemLongClicked) {
+                    Log.d("Currency item ", currency.getName() + " long clicked" );
+                    currency.setLongClicked(true);
+                    Collections.sort(currencies, longClickedComp);
+                    currency.setLongClicked(false);
+                    adapter.notifyDataSetChanged();
+                    noItemLongClicked = false;
+                    setTimeToDB(currency);
+                }
+                else {
+                    Log.d("Currency item ", currency.getName() + " long clicked, but another currency is already choosed" );
+                }
+
+                //seletcedCurrency.setText(currency.getName());
+                //seletcedCurrency.setVisibility(View.VISIBLE);
+
             }
         });
-
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
@@ -150,12 +182,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         cv.put("FAVORITE", changeFavorite);
         db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
         Log.d(CURRENCY_TAG, " " + currency.getName() + " favorite changed" );
-
-        //Сортируем избранные валюты вверх по списку
-        Collections.sort(currencies, lastUsedComp);
-        Collections.sort(currencies, faveComp);
-        //Обновляем RecycleView, меняем "пустую" звездочку на "избранную
-        adapter.notifyDataSetChanged();
+        sortCurrencies();
     }
 
     private void setTimeToDB(Currency currency) {
@@ -169,10 +196,14 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
         Log.d(CURRENCY_TAG, " " + currency.getName() + " lastUsed changed" );
 
+    }
+
+    private void sortCurrencies() {
         //Сортируем избранные валюты вверх по списку
         Collections.sort(currencies, lastUsedComp);
         Collections.sort(currencies, faveComp);
 
         adapter.notifyDataSetChanged();
     }
+
 }

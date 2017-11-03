@@ -5,9 +5,14 @@
     android:layout_height="match_parent"
     tools:context="com.example.tfs_exchange.MainActivity">
 
+
     <android.support.v7.widget.RecyclerView
-        android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/recyclerView"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/recyclerView"
+        tools:layout_editor_absoluteX="8dp"/>
+
+
+
 
 </android.support.constraint.ConstraintLayout>

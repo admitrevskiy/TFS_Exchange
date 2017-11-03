@@ -8,11 +8,13 @@ public class Currency {
     private String name;
     private long lastUse;
     private boolean favorite;
+    private boolean longClicked;
 
     public Currency(String name, long lastUse, boolean favorite) {
         this.name = name;
         this.lastUse = lastUse;
         this.favorite = favorite;
+        this.longClicked = false;
     }
 
     public Currency() {
@@ -41,5 +43,13 @@ public class Currency {
 
     public void setFavorite(boolean favorite) {
         this.favorite = favorite;
+    }
+
+    public boolean isLongClicked() {
+        return longClicked;
+    }
+
+    public void setLongClicked(boolean longClicked) {
+        this.longClicked = longClicked;
     }
 }
