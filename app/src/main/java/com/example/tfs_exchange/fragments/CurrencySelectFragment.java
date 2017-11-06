@@ -2,6 +2,7 @@ package com.example.tfs_exchange.fragments;
 
 
 
+import android.nfc.Tag;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -60,7 +61,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     private LastUsedComparator lastUsedComp;
     private LongClickedComparator longClickedComp;
     private boolean noItemLongClicked;
-    private Currency longClickedCurrency;
+    private Currency selectedCurrency;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -70,15 +71,33 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
 
     private CurrencyRecyclerListAdapter adapter;
 
-    private final List<Currency> currencies = new ArrayList<Currency>();
+    private List<Currency> currencies = new ArrayList<Currency>();
+    private final List<Currency> faveCurrencies = new ArrayList<Currency>();
 
     @Nullable
     @Override
     public void onPause() {
-        super.onPause();
         sortCurrencies();
         noItemLongClicked = true;
-        longClickedCurrency = null;
+        selectedCurrency = null;
+        currencies = null;
+        currencies = new ArrayList<>();
+
+        super.onPause();
+        Log.d(TAG, " onPause");
+    }
+
+    @Nullable
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        /** Загрузка валют из БД происходит асинхронно **/
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+        Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
+        loader.forceLoad();
+        /** ------------------------------------------**/
+
+        super.onCreate(savedInstanceState);
+
     }
 
     @Nullable
@@ -94,12 +113,6 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
 
         noItemLongClicked = true;
 
-        /** Загрузка валют из БД происходит асинхронно **/
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-        Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
-        loader.forceLoad();
-        /** ------------------------------------------**/
-        
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
@@ -111,8 +124,11 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void onItemClick(Currency currency) {
                 Log.d("Currency item ", " " + currency.getName() + " short clicked");
-                replaceExchangeFragment("USD", "EUR");
                 setTimeToDB(currency);
+                if (noItemLongClicked) {
+                    replaceExchangeFragment(currency.getName(), getCurrencyForExchange(currency));
+                }
+                else replaceExchangeFragment(selectedCurrency.getName(), currency.getName());
             }
         }, new  CurrencyRecyclerListAdapter.OnItemLongClickListener() {
             @Override
@@ -124,27 +140,23 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
                     currency.setLongClicked(false);
                     adapter.notifyDataSetChanged();
                     noItemLongClicked = false;
-                    longClickedCurrency = currency;
+                    selectedCurrency = currency;
                     setTimeToDB(currency);
                 }
                 else {
                     Log.d("Currency item ", currency.getName() + " long clicked, but another currency is already choosed" );
                 }
-
-                //seletcedCurrency.setText(currency.getName());
-                //seletcedCurrency.setVisibility(View.VISIBLE);
-
             }
         });
-
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
-
+        Log.d(TAG, " onCreareView" + this.hashCode());
         return firstFragmentRootView;
+
     }
 
 
@@ -163,8 +175,8 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         for (Currency currency : data) {
             currencies.add(currency);
         }
-
         Log.d(TAG, "onLoadFinished: " + loader.hashCode());
+        sortCurrencies();
     }
 
     @Override
@@ -208,8 +220,8 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         //Сортируем избранные валюты вверх по списку
         Collections.sort(currencies, lastUsedComp);
         Collections.sort(currencies, faveComp);
-
         adapter.notifyDataSetChanged();
+        Log.d(TAG, " sortCurrencies");
     }
 
     private void replaceExchangeFragment(String currencyFrom, String currencyTo) {
@@ -222,6 +234,21 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.addToBackStack(TAG);
         fragmentTransaction.commit();
+    }
+
+    private String getCurrencyForExchange(Currency selectedCurrency) {
+        for (Currency currency : currencies) {
+            if (currency.isFavorite() && !currency.getName().equals(selectedCurrency.getName())) {
+                return currency.getName();
+            }
+            else if (!currency.isFavorite()) {
+                break;
+            }
+        }
+        if (selectedCurrency.getName().equals("USD")) {
+            return "RUB";
+        }
+        return "USD";
     }
 
 }

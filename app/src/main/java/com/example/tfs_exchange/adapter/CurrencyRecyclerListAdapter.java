@@ -35,6 +35,8 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
 
     private DBHelper dbHelper;
 
+    private final String TAG = "RecyclerListAdapter";
+
 
     //Список валют
     private List<Currency> currencies;
@@ -53,6 +55,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
         this.itemClickListener = itemClickListener;
         this.itemLongClickListener = itemLongClickListener;
         this.favoriteClickListener = favoriteClickListener;
+        Log.d(TAG, " Constructor");
     }
 
     public interface OnItemClickListener {
@@ -89,6 +92,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
 
         //Создаем и возвращаем viewHolder
         ViewHolder viewHolder = new ViewHolder(view);
+        Log.d(TAG, " onCreateViewHolder");
         return viewHolder;
     }
 
@@ -108,6 +112,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
         }
         holder.favoriteButton.setImageResource(iconResourceId);
         holder.bind(currencies.get(position), favoriteClickListener, itemClickListener, itemLongClickListener, position);
+        Log.d(TAG, " onBindViewHolder");
     }
 
     //Размер списка
@@ -127,6 +132,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
             super(itemView);
             currencyName = itemView.findViewById(R.id.currencyItemTextView);
             favoriteButton = itemView.findViewById(R.id.selectFavoriteCurrencyButton);
+            Log.d(TAG, " ViewHolder constructor" );
         }
 
         public void bind(final Currency currency, final OnItemClickListener favoriteListener, final OnItemClickListener itemClickListener, final OnItemLongClickListener onItemLongClickListener, final int id) {
@@ -149,7 +155,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
                     return false;
                 }
             });
-
+            Log.d(TAG, " bind " + currency.getName());
         }
     }
 

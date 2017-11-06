@@ -10,8 +10,11 @@ import android.util.Log;
 
 import com.example.tfs_exchange.Currency;
 import com.example.tfs_exchange.DBHelper;
+import com.example.tfs_exchange.comparators.FavoriteComparator;
+import com.example.tfs_exchange.comparators.LastUsedComparator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,6 +25,10 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
 
 
     private DBHelper dbHelper;
+    private Currency currency;
+    List<Currency> currencies;
+    private FavoriteComparator faveComp = new FavoriteComparator();
+    private LastUsedComparator lastUsedComp = new LastUsedComparator();
 
     public static final String TAG = "AsyncLoader";
 
@@ -32,7 +39,7 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
 
     @Override
     public List<Currency> loadInBackground() {
-         List<Currency> currencies = new ArrayList<Currency>();
+         currencies = new ArrayList<Currency>();
 
         //подключаем Data Base Helper, получаем из него БД для чтения
         dbHelper = new DBHelper(getContext());
@@ -50,10 +57,7 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
 
             do {
                 //Создаем объект типа Currency и присваиваем ему значения из БД
-
-                //String name = cursor.getString(baseColId);
-
-                Currency currency = new Currency();
+                currency = new Currency();
                 currency.setName(cursor.getString(baseColId));
                 currency.setLastUse(cursor.getInt(lastUsedColId));
                 int favorite = cursor.getInt(favoriteColId);
@@ -63,6 +67,7 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
                 {
                     currencies.add(currency);
                     currency.setFavorite(false);
+                    Log.d(TAG, " " +currency.getName() + " was added");
                 } else {
                     currencies.add(0, currency);
                     currency.setFavorite(true);
@@ -76,7 +81,7 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
 
         //Закрываем БД
         db.close();
-
+        sortCurrencies();
         return currencies;
     }
 
@@ -104,5 +109,10 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
         Log.d(TAG, hashCode() + " onReset");
     }
 
+    private void sortCurrencies() {
+        //Сортируем избранные валюты вверх по списку
+        Collections.sort(currencies, lastUsedComp);
+        Collections.sort(currencies, faveComp);
 
+    }
 }
