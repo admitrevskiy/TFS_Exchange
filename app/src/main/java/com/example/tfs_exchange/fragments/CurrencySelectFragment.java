@@ -47,6 +47,7 @@ import butterknife.OnItemLongClick;
 
 /**
  * Created by pusya on 27.10.17.
+ * Заметка от 9.11: анонимные внутренние классы переписать на лямбдах
  */
 
 public class CurrencySelectFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Currency>> {
@@ -184,6 +185,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
     }
 
+    //Записываем в БД изменение избранности валюты
     private void setFaveToDB(Currency currency) {
         dbHelper = new DBHelper(getContext());
         db = dbHelper.getWritableDatabase();
@@ -203,6 +205,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         sortCurrencies();
     }
 
+    //Записываем в БД время последнего использования
     private void setTimeToDB(Currency currency) {
         dbHelper = new DBHelper(getContext());
         db = dbHelper.getWritableDatabase();
@@ -216,8 +219,8 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
 
     }
 
+    //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
     private void sortCurrencies() {
-        //Сортируем избранные валюты вверх по списку
         Collections.sort(currencies, lastUsedComp);
         Collections.sort(currencies, faveComp);
         adapter.notifyDataSetChanged();
@@ -236,6 +239,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         fragmentTransaction.commit();
     }
 
+    //Выбор валюты после LongClick
     private String getCurrencyForExchange(Currency selectedCurrency) {
         for (Currency currency : currencies) {
             if (currency.isFavorite() && !currency.getName().equals(selectedCurrency.getName())) {

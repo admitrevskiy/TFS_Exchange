@@ -6,9 +6,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 /**
  * Created by pusya on 16.10.17.
+ * Заметка от 7.11: мигрировать на Room
  */
 
-//Создаем помощник работы с SQLite
+//Создаем помощник работы с SQLite на чистом SQLite
 public class DBHelper extends SQLiteOpenHelper {
 
     //Назначаем имя базы данных и версию

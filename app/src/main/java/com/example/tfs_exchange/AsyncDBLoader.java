@@ -19,6 +19,8 @@ import java.util.List;
 
 /**
  * Created by pusya on 23.10.17.
+ * Асинхронный загрузчик валют из БД на чистом SQLite
+ * Заметка от 7.11: мигрировать на Room
  */
 
 public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {

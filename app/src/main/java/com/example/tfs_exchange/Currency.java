@@ -2,6 +2,7 @@ package com.example.tfs_exchange;
 
 /**
  * Created by pusya on 16.10.17.
+ * Модель валюты для БД
  */
 
 public class Currency {
