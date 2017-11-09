@@ -67,13 +67,10 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
 
-    //@BindView(R.id.selected_currency)
-    //TextView seletcedCurrency;
-
     private CurrencyRecyclerListAdapter adapter;
 
     private List<Currency> currencies = new ArrayList<Currency>();
-    private final List<Currency> faveCurrencies = new ArrayList<Currency>();
+    //private final List<Currency> faveCurrencies = new ArrayList<Currency>();
 
     @Nullable
     @Override
@@ -157,7 +154,12 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         recyclerView.setItemAnimator(itemAnimator);
         Log.d(TAG, " onCreareView" + this.hashCode());
         return firstFragmentRootView;
+    }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        dbHelper.close();
     }
 
 
@@ -203,6 +205,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
         Log.d(CURRENCY_TAG, " " + currency.getName() + " favorite changed" );
         sortCurrencies();
+        db.close();
     }
 
     //Записываем в БД время последнего использования
@@ -216,7 +219,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         cv.put("LAST_USED", time);
         db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
         Log.d(CURRENCY_TAG, " " + currency.getName() + " lastUsed changed" );
-
+        db.close();
     }
 
     //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
@@ -253,6 +256,18 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
             return "RUB";
         }
         return "USD";
+    }
+
+    @Nullable
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (dbHelper != null) {
+            dbHelper.close();
+        }
+        if (db != null) {
+            db.close();
+        }
     }
 
 }

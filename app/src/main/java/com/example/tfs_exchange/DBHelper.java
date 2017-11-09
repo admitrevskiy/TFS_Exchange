@@ -1,20 +1,35 @@
 package com.example.tfs_exchange;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
  * Created by pusya on 16.10.17.
+ * Читать http://sqlite.org/datatype3.html
  * Заметка от 7.11: мигрировать на Room
  */
 
 //Создаем помощник работы с SQLite на чистом SQLite
 public class DBHelper extends SQLiteOpenHelper {
 
+    private ContentValues cv;
+    private SQLiteDatabase db;
+    private DBHelper dbHelper;
+
     //Назначаем имя базы данных и версию
     private static final String DATA_BASE_NAME = "exchangerDB";
     private static final int DATA_BASE_VERSION = 1;
+
+    private static final String TABLE_EXCHANGE_NAME = "exchange_name";
+    private static final String EXCHANGE_BASE = "exchange_base";
+    private static final String EXCHANGE_SYMBOLS = "exchange_symbols";
+    private static final String EXCHANGE_BASE_AMOUNT = "exchange_base_amount";
+    private static final String EXCHANGE_SYMBOLS_AMOUNT = "exchange_symbols_amount";
+    private static final String EXCHANGE_RATE = "exchange_rate";
+    private static final String EXCHANGE_DATE = "exchange_date";
+
 
     private static final String TABLE_CURRENCY_NAME = "currency_name";
     private static final String CURRENCY_BASE = "currency_base";
@@ -27,11 +42,21 @@ public class DBHelper extends SQLiteOpenHelper {
             + FAVORITE + " integer "
             + ");";
 
+    private static final String EXCHANGE_TABLE = "create table " + TABLE_EXCHANGE_NAME + " ("
+            + EXCHANGE_BASE + " string primary key, "
+            + EXCHANGE_BASE_AMOUNT + " real, "
+            + EXCHANGE_SYMBOLS + " string, "
+            + EXCHANGE_SYMBOLS_AMOUNT + " real, "
+            + EXCHANGE_RATE + " real, "
+            + EXCHANGE_DATE + " integer "
+            + ");";
 
     @Override
     public void onCreate(SQLiteDatabase mySQLiteDB) {
         mySQLiteDB.execSQL(CURRENCY_TABLE);
-        fillData(mySQLiteDB);
+        mySQLiteDB.execSQL(EXCHANGE_TABLE);
+        fillCurrencyData(mySQLiteDB);
+
     }
 
     @Override
@@ -44,7 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
         super(context, DATA_BASE_NAME, null, DATA_BASE_VERSION);
     }
 
-    private void fillData(SQLiteDatabase currencydb) {
+    private void fillCurrencyData(SQLiteDatabase currencydb) {
         currencydb.execSQL("INSERT INTO currency_name VALUES('USD', 1, 0);");
         currencydb.execSQL("INSERT INTO currency_name VALUES('RUB', 1, 0);");
         currencydb.execSQL("INSERT INTO currency_name VALUES('EUR', 1, 0);");

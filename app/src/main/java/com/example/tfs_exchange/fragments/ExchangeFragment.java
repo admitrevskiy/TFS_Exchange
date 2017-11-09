@@ -1,5 +1,7 @@
 package com.example.tfs_exchange.fragments;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,18 +10,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.OnTextChanged;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
+import com.example.tfs_exchange.Currency;
+import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.FixerApiHelper;
 import com.example.tfs_exchange.R;
+
+import java.util.Date;
 
 /**
  * Created by pusya on 01.11.17.
@@ -30,6 +38,13 @@ import com.example.tfs_exchange.R;
 
 public class ExchangeFragment extends Fragment {
     private static final String TAG = "ExchangeFragment";
+
+    private String currencyFrom;
+    private String currencyTo;
+
+    private ContentValues cv;
+    private SQLiteDatabase db;
+    private DBHelper dbHelper;
 
     private double rate;
 
@@ -47,6 +62,9 @@ public class ExchangeFragment extends Fragment {
     @BindView(R.id.currency_to_edit)
     EditText currencyAmountToEdit;
 
+    @BindView(R.id.exchange_button)
+    Button exchangeButton;
+
     //Слушатель изменения в текстовом поле from
     @OnTextChanged(value = R.id.currency_from_edit, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
     public void fromCurrencyAmountChanged(Editable s) {
@@ -63,23 +81,30 @@ public class ExchangeFragment extends Fragment {
         }
     }
 
+    //Слушатель нажатия на кнопку из ButterKnife
+    @OnClick(R.id.exchange_button)
+    void onSaveClick() {
+        setExchangeToDB();
+        Log.d(TAG, " button clicked");
+    }
+
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
-
-    @Override
 
 
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View exchangeFragmentRootView = inflater.inflate(R.layout.exchange_fragment, container, false);
         ButterKnife.bind(this, exchangeFragmentRootView);
+        disactivateRate();
         //Получаем Bundle от вызвавшего фрагмента и достаем из него информацию
         Bundle incomingBundle = getArguments();
         if (incomingBundle!= null) {
-            final String currencyFrom = incomingBundle.getStringArray("currencies")[0];
-            final String currencyTo = incomingBundle.getStringArray("currencies")[1];
+            currencyFrom = incomingBundle.getStringArray("currencies")[0];
+            currencyTo = incomingBundle.getStringArray("currencies")[1];
 
             //Устанавливаем имена валют
             currencyFromName.setText(currencyFrom);
@@ -97,7 +122,15 @@ public class ExchangeFragment extends Fragment {
     private void activateRate (double rate) {
         currencyAmountFromEdit.setText("1.00");
         currencyAmountToEdit.setText(String.valueOf(rate) + " ");
+        exchangeButton.setText("ОБМЕНЯТЬ");
+        exchangeButton.setEnabled(true);
         Log.d(TAG, "rate activated");
+    }
+
+    private void disactivateRate() {
+        currencyAmountFromEdit.setEnabled(false);
+        currencyAmountToEdit.setEnabled(false);
+        exchangeButton.setEnabled(false);
     }
 
     //Подписка, используем RetroLambda, RxJava, Retrofit настраиваем в gradle
@@ -109,7 +142,16 @@ public class ExchangeFragment extends Fragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(apiResponse -> {
                     rate = apiResponse.getRates().getRate();
-                    activateRate(rate);
+                    if (rate != 0) {
+                        activateRate(rate);
+
+                    } else {
+                        Log.d(TAG, " some problems with loading rates");
+                    }
+
+                }, throwable -> {
+                    Log.d(TAG, " connection problems");
+                    exchangeButton.setText("No connection");
                 });
         Log.d(TAG, "Subscribe");
     }
@@ -120,11 +162,27 @@ public class ExchangeFragment extends Fragment {
         Log.d(TAG, "unsubscribe from rate");
     }
 
-    //Отписка в onDetach
+    //Отписка происходит в onDetach
     @Override
     public void onDetach() {
         super.onDetach();
         unsubscribeRate();
         Log.d(TAG, "onDetach()");
+    }
+
+    private void setExchangeToDB() {
+        dbHelper = new DBHelper(getContext());
+        db = dbHelper.getWritableDatabase();
+        cv = new ContentValues();
+        long date = new Date().getTime();
+        int time = (int)date/1000;
+        cv.put("EXCHANGE_BASE", currencyFrom);
+        cv.put("EXCHANGE_BASE_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText())));
+        cv.put("EXCHANGE_SYMBOLS", currencyTo);
+        cv.put("EXCHANGE_SYMBOLS_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountToEdit.getText())));
+        cv.put("EXCHANGE_RATE", rate);
+        cv.put("EXCHANGE_DATE", time);
+        db.insert("exchange_name", null, cv);
+        db.close();
     }
 }

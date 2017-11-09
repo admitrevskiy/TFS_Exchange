@@ -80,7 +80,7 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
             } while (cursor.moveToNext());
         }
 
-
+        cursor.close();
         //Закрываем БД
         db.close();
         sortCurrencies();
@@ -102,6 +102,7 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
     @Override
     protected void onAbandon() {
         super.onAbandon();
+        dbHelper.close();
         Log.d(TAG, hashCode() + " onAbandon");
     }
 
