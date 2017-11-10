@@ -103,4 +103,6 @@ public class DBHelper extends SQLiteOpenHelper {
         currencydb.execSQL("INSERT INTO currency_name VALUES('TRY', 1, 0);");
         currencydb.execSQL("INSERT INTO currency_name VALUES('ZAR', 1, 0);");
     }
+
+
 }

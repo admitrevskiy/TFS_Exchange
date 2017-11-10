@@ -33,9 +33,10 @@ import static com.example.tfs_exchange.R.drawable.favorite_star;
 
 public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRecyclerListAdapter.ViewHolder> {
 
-    private DBHelper dbHelper;
+    //private DBHelper dbHelper;
 
-    private final String TAG = "RecyclerListAdapter";
+    //Curr вместо Currency потому что длина тэга не больше 23 символов
+    private final String TAG = "CurrRecyclerListAdapter";
 
 
     //Список валют
