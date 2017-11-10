@@ -48,7 +48,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + EXCHANGE_SYMBOLS + " string, "
             + EXCHANGE_SYMBOLS_AMOUNT + " real, "
             + EXCHANGE_RATE + " real, "
-            + EXCHANGE_DATE + " integer "
+            + EXCHANGE_DATE + " String "
             + ");";
 
     @Override

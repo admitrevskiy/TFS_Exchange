@@ -27,6 +27,7 @@ import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.FixerApiHelper;
 import com.example.tfs_exchange.R;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -38,6 +39,7 @@ import java.util.Date;
 
 public class ExchangeFragment extends Fragment {
     private static final String TAG = "ExchangeFragment";
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd '\n' HH:mm:ss");
 
     private String currencyFrom;
     private String currencyTo;
@@ -121,7 +123,9 @@ public class ExchangeFragment extends Fragment {
     //Устанавливаем в поля значение и курса и единицу для базовой валюты
     private void activateRate (double rate) {
         currencyAmountFromEdit.setText("1.00");
+        currencyAmountFromEdit.setEnabled(true);
         currencyAmountToEdit.setText(String.valueOf(rate) + " ");
+        currencyAmountToEdit.setEnabled(true);
         exchangeButton.setText("ОБМЕНЯТЬ");
         exchangeButton.setEnabled(true);
         Log.d(TAG, "rate activated");
@@ -174,14 +178,13 @@ public class ExchangeFragment extends Fragment {
         dbHelper = new DBHelper(getContext());
         db = dbHelper.getWritableDatabase();
         cv = new ContentValues();
-        long date = new Date().getTime();
-        int time = (int)date/1000;
+        Date date = new Date();
         cv.put("EXCHANGE_BASE", currencyFrom);
         cv.put("EXCHANGE_BASE_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText())));
         cv.put("EXCHANGE_SYMBOLS", currencyTo);
         cv.put("EXCHANGE_SYMBOLS_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountToEdit.getText())));
         cv.put("EXCHANGE_RATE", rate);
-        cv.put("EXCHANGE_DATE", time);
+        cv.put("EXCHANGE_DATE", dateFormat.format(date));
         db.insert("exchange_name", null, cv);
         db.close();
     }

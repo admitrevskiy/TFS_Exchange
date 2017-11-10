@@ -3,6 +3,8 @@ package com.example.tfs_exchange.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,10 +13,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.tfs_exchange.AsyncExchangeDBLoader;
 import com.example.tfs_exchange.Currency;
 import com.example.tfs_exchange.Exchange;
 import com.example.tfs_exchange.R;
-import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.adapter.HistoryRecyclerListAdapter;
 
 import java.util.ArrayList;
@@ -28,7 +30,9 @@ import butterknife.ButterKnife;
  * Created by pusya on 10.11.17.
  */
 
-public class HisroryFragment extends Fragment {
+public class HisroryFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Exchange>> {
+
+    private static final int LOADER_ID = 2;
 
     private final static String TAG = "HistoryFragment";
 
@@ -42,14 +46,13 @@ public class HisroryFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        /** Загрузка валют из БД происходит асинхронно **/
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+        Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
+        loader.forceLoad();
+        /** ------------------------------------------**/
+
         super.onCreate(savedInstanceState);
-        exchanges.add(new Exchange("USD", "RUB", 2.0, 120.0, new Date()));
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        exchanges.add(new Exchange("EUR", "RUB", 2.0, 140.0, new Date()));
     }
 
     @Override
@@ -68,5 +71,28 @@ public class HisroryFragment extends Fragment {
         Log.d(TAG, " onCreareView" + this.hashCode());
 
         return historyFragmentRootView;
+    }
+
+    @Override
+    public Loader<List<Exchange>> onCreateLoader(int id, Bundle args) {
+        Loader<List<Exchange>> loader = null;
+        if (id == LOADER_ID) {
+            loader = new AsyncExchangeDBLoader(getContext());
+            Log.d(TAG, "onCreateLoader: " + loader.hashCode());
+        }
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<Exchange>> loader, List<Exchange> data) {
+        for (Exchange exchange : data) {
+            exchanges.add(exchange);
+        }
+        Log.d(TAG, "onLoadFinished: " + loader.hashCode());
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<Exchange>> loader) {
+        Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
     }
 }

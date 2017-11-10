@@ -2,12 +2,10 @@ package com.example.tfs_exchange.fragments;
 
 
 
-import android.nfc.Tag;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.content.ContentValues;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import android.support.annotation.Nullable;
@@ -19,7 +17,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import com.example.tfs_exchange.AsyncDBLoader;
+import com.example.tfs_exchange.AsyncCurrencyDBLoader;
 import com.example.tfs_exchange.Currency;
 import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.R;
@@ -28,13 +26,9 @@ import com.example.tfs_exchange.comparators.FavoriteComparator;
 import com.example.tfs_exchange.comparators.LastUsedComparator;
 import com.example.tfs_exchange.comparators.LongClickedComparator;
 
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +37,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnItemLongClick;
 
 /**
  * Created by pusya on 27.10.17.
@@ -51,7 +44,7 @@ import butterknife.OnItemLongClick;
  */
 
 public class CurrencySelectFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Currency>> {
-    public static final int LOADER_ID = 1;
+    private static final int LOADER_ID = 1;
 
     private final static String CURRENCY_TAG = "currency";
     private final static String TAG = "CurrencySelectFragment";
@@ -167,7 +160,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     public Loader<List<Currency>> onCreateLoader(int id, Bundle args) {
         Loader<List<Currency>> loader = null;
         if (id == LOADER_ID) {
-            loader = new AsyncDBLoader(getContext());
+            loader = new AsyncCurrencyDBLoader(getContext());
             Log.d(TAG, "onCreateLoader: " + loader.hashCode());
         }
         return loader;

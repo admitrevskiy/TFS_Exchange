@@ -23,18 +23,19 @@ import java.util.List;
  * Заметка от 7.11: мигрировать на Room
  */
 
-public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
+public class AsyncCurrencyDBLoader extends AsyncTaskLoader<List<Currency>> {
 
 
     private DBHelper dbHelper;
     private Currency currency;
-    List<Currency> currencies;
+    private List<Currency> currencies;
     private FavoriteComparator faveComp = new FavoriteComparator();
     private LastUsedComparator lastUsedComp = new LastUsedComparator();
+    private SQLiteDatabase db;
 
-    public static final String TAG = "AsyncLoader";
+    public static final String TAG = "AsyncCurrencyLoader";
 
-    public AsyncDBLoader(Context context) {
+    public AsyncCurrencyDBLoader(Context context) {
         super(context);
         Log.d(TAG, hashCode() + " create AsyncLoader");
     }
@@ -45,7 +46,7 @@ public class AsyncDBLoader extends AsyncTaskLoader<List<Currency>> {
 
         //подключаем Data Base Helper, получаем из него БД для чтения
         dbHelper = new DBHelper(getContext());
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        db = dbHelper.getReadableDatabase();
 
         //Создаем курсор
         Cursor cursor = db.query("currency_name", null, null, null, null, null, null);

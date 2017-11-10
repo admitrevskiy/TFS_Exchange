@@ -56,7 +56,7 @@ public class HistoryRecyclerListAdapter extends RecyclerView.Adapter<HistoryRecy
         holder.currencyToTextView.setText(exchange.getCurrencyTo());
         holder.amountFromTextView.setText(String.valueOf(exchange.getAmountFrom()));
         holder.amountToTextView.setText(String.valueOf(exchange.getAmountTo()));
-        holder.dateTextView.setText(dateFormat.format(exchange.getDate()));
+        holder.dateTextView.setText(exchange.getDate());
         Log.d(TAG, " onBindViewHolder");
     }
 
