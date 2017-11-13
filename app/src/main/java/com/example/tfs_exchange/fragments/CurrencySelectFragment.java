@@ -17,9 +17,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import com.example.tfs_exchange.AsyncCurrencyDBLoader;
+import com.example.tfs_exchange.db.AsyncCurrencyDBLoader;
 import com.example.tfs_exchange.Currency;
-import com.example.tfs_exchange.DBHelper;
+import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.comparators.FavoriteComparator;

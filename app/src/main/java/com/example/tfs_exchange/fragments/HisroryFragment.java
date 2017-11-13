@@ -13,14 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.tfs_exchange.AsyncExchangeDBLoader;
-import com.example.tfs_exchange.Currency;
+import com.example.tfs_exchange.db.AsyncExchangeDBLoader;
 import com.example.tfs_exchange.Exchange;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.HistoryRecyclerListAdapter;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -46,7 +44,7 @@ public class HisroryFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        /** Загрузка валют из БД происходит асинхронно **/
+        /** Загрузка обменов из БД происходит асинхронно **/
         getLoaderManager().initLoader(LOADER_ID, null, this);
         Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
         loader.forceLoad();

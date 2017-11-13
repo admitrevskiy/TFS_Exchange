@@ -22,9 +22,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-import com.example.tfs_exchange.Currency;
-import com.example.tfs_exchange.DBHelper;
-import com.example.tfs_exchange.FixerApiHelper;
+import com.example.tfs_exchange.db.DBHelper;
+import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.R;
 
 import java.text.SimpleDateFormat;

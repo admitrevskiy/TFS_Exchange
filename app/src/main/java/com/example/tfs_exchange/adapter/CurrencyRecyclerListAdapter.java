@@ -5,14 +5,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.ImageButton;
-import android.widget.AdapterView.OnItemLongClickListener;
 
 
 import com.example.tfs_exchange.Currency;
-import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.R;
 
 import java.util.List;

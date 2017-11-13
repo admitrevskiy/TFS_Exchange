@@ -1,4 +1,4 @@
-package com.example.tfs_exchange;
+package com.example.tfs_exchange.db;
 
 
 import android.content.Context;
@@ -9,7 +9,6 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
 import com.example.tfs_exchange.Currency;
-import com.example.tfs_exchange.DBHelper;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
 import com.example.tfs_exchange.comparators.LastUsedComparator;
 

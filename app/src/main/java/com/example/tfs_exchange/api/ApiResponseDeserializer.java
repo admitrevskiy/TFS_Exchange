@@ -1,4 +1,4 @@
-package com.example.tfs_exchange;
+package com.example.tfs_exchange.api;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

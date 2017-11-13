@@ -1,4 +1,4 @@
-package com.example.tfs_exchange;
+package com.example.tfs_exchange.db;
 
 import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
@@ -6,8 +6,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.tfs_exchange.Exchange;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**

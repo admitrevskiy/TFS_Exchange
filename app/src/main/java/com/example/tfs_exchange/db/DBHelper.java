@@ -1,4 +1,4 @@
-package com.example.tfs_exchange;
+package com.example.tfs_exchange.db;
 
 import android.content.ContentValues;
 import android.content.Context;
