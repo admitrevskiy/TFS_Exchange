@@ -26,6 +26,7 @@ import butterknife.ButterKnife;
 
 /**
  * Created by pusya on 10.11.17.
+ * История обменов, допилить фильтры
  */
 
 public class HisroryFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Exchange>> {

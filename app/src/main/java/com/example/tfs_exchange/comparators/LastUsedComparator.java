@@ -6,6 +6,7 @@ import java.util.Comparator;
 
 /**
  * Created by pusya on 27.10.17.
+ * Сортировка по последним исользованным
  */
 
 public class LastUsedComparator implements Comparator<Currency> {

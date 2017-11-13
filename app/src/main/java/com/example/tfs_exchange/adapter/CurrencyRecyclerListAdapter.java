@@ -30,8 +30,6 @@ import static com.example.tfs_exchange.R.drawable.favorite_star;
 
 public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRecyclerListAdapter.ViewHolder> {
 
-    //private DBHelper dbHelper;
-
     //Curr вместо Currency потому что длина тэга не больше 23 символов
     private final String TAG = "CurrRecyclerListAdapter";
 
@@ -44,18 +42,6 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
     OnItemLongClickListener itemLongClickListener;
     OnItemClickListener favoriteClickListener;
 
-    //Конструктор
-    public CurrencyRecyclerListAdapter(List<Currency> currencies,
-                                       OnItemClickListener favoriteClickListener,
-                                       OnItemClickListener itemClickListener,
-                                       OnItemLongClickListener itemLongClickListener) {
-        this.currencies = currencies;
-        this.itemClickListener = itemClickListener;
-        this.itemLongClickListener = itemLongClickListener;
-        this.favoriteClickListener = favoriteClickListener;
-        Log.d(TAG, " Constructor");
-    }
-
     public interface OnItemClickListener {
 
         void onItemClick(Currency currency);
@@ -66,20 +52,16 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
         void onItemLongClick(Currency currency, int id);
     }
 
-
-    public CurrencyRecyclerListAdapter(List<Currency> currencies) {
+    //Конструктор
+    public CurrencyRecyclerListAdapter(List<Currency> currencies,
+                                       OnItemClickListener favoriteClickListener,
+                                       OnItemClickListener itemClickListener,
+                                       OnItemLongClickListener itemLongClickListener) {
         this.currencies = currencies;
-    }
-
-    public CurrencyRecyclerListAdapter(List<Currency> currencies, OnItemClickListener favoriteClickListener) {
-        this.currencies = currencies;
-        this.favoriteClickListener = favoriteClickListener;
-    }
-
-    public CurrencyRecyclerListAdapter(List<Currency> currencies, OnItemClickListener favoriteClickListener, OnItemClickListener itemClickListener) {
-        this.currencies = currencies;
-        this.favoriteClickListener = favoriteClickListener;
         this.itemClickListener = itemClickListener;
+        this.itemLongClickListener = itemLongClickListener;
+        this.favoriteClickListener = favoriteClickListener;
+        Log.d(TAG, " Constructor");
     }
 
     //Создаем ViewHolder

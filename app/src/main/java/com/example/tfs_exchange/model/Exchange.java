@@ -4,6 +4,8 @@ import java.util.Date;
 
 /**
  * Created by pusya on 10.11.17.
+ * Модель истории обмена.
+ * Нужен rate или для истории курса запилить отдельную БД?
  */
 
 public class Exchange {

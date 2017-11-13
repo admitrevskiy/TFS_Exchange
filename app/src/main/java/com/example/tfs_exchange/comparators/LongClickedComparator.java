@@ -6,6 +6,7 @@ import java.util.Comparator;
 
 /**
  * Created by pusya on 03.11.17.
+ * Сортировка для закрепления валюты с долгим нажатием вверху списка
  */
 
 public class LongClickedComparator implements Comparator<Currency> {

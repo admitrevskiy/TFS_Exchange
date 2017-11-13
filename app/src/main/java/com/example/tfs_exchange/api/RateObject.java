@@ -6,6 +6,7 @@ import java.util.Map;
 
 /**
  * Created by pusya on 07.11.17.
+ * Вспомогательный класс для построения ApiResponse
  */
 
 public class RateObject {
