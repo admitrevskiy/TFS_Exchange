@@ -9,7 +9,7 @@ import android.widget.TextView;
 import android.widget.ImageButton;
 
 
-import com.example.tfs_exchange.Currency;
+import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.R;
 
 import java.util.List;

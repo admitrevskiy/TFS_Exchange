@@ -1,4 +1,4 @@
-package com.example.tfs_exchange;
+package com.example.tfs_exchange.model;
 
 /**
  * Created by pusya on 16.10.17.

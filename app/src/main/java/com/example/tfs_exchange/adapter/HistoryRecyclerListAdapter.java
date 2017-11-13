@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.tfs_exchange.Exchange;
+import com.example.tfs_exchange.model.Exchange;
 import com.example.tfs_exchange.R;
 
 import java.text.SimpleDateFormat;

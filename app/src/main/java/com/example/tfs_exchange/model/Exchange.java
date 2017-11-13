@@ -1,4 +1,4 @@
-package com.example.tfs_exchange;
+package com.example.tfs_exchange.model;
 
 import java.util.Date;
 

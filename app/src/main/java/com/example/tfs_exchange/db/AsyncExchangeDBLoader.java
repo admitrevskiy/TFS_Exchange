@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.tfs_exchange.Exchange;
+import com.example.tfs_exchange.model.Exchange;
 
 import java.util.ArrayList;
 import java.util.List;
