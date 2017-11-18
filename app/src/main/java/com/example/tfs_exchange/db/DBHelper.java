@@ -2,8 +2,16 @@ package com.example.tfs_exchange.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import com.example.tfs_exchange.model.Exchange;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by pusya on 16.10.17.
@@ -14,6 +22,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 //Создаем помощник работы с SQLite на чистом SQLite
 public class DBHelper extends SQLiteOpenHelper {
 
+    private static final String TAG = "DBHelper";
     private ContentValues cv;
     private SQLiteDatabase db;
     private DBHelper dbHelper;
@@ -43,13 +52,18 @@ public class DBHelper extends SQLiteOpenHelper {
             + ");";
 
     private static final String EXCHANGE_TABLE = "create table " + TABLE_EXCHANGE_NAME + " ("
-            + EXCHANGE_BASE + " string primary key, "
+            + EXCHANGE_BASE + " string,  "
             + EXCHANGE_BASE_AMOUNT + " real, "
             + EXCHANGE_SYMBOLS + " string, "
             + EXCHANGE_SYMBOLS_AMOUNT + " real, "
             + EXCHANGE_RATE + " real, "
             + EXCHANGE_DATE + " String "
             + ");";
+
+    private String getExchangeHistory(String currencyFrom, String currencyTo) {
+        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE " + EXCHANGE_BASE + "= '"
+                + currencyFrom + "' AND " + EXCHANGE_SYMBOLS + " = '" + currencyTo + "'";
+    }
 
     @Override
     public void onCreate(SQLiteDatabase mySQLiteDB) {
@@ -63,6 +77,26 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
     }
+
+    public List<Exchange> getSortedExchangeHistory(String currencyFrom, String currencyTo) {
+        List<Exchange> exchanges = new ArrayList<>();
+        try (SQLiteDatabase db = this.getReadableDatabase();
+             Cursor cursor = db.rawQuery(getExchangeHistory(currencyFrom, currencyTo), null)) {
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                do {
+                    double amountFrom = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT));
+                    double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
+                    String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
+                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date));
+                    Log.d(TAG, currencyFrom + " " + currencyTo + " " + date);
+                } while (cursor.moveToNext());
+            }
+        } catch (SQLException e) {
+            Log.d(TAG, e.getMessage());
+        }
+        return exchanges;
+    }
+
 
     //В конструктор передаем контекст, имя базы данных, CursorFactory (не используется, поэтому null), и версию базы данных
     public DBHelper (Context context) {

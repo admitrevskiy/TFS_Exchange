@@ -25,6 +25,13 @@ public class Exchange {
         this.date = date;
     }
 
+    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, String date) {
+        this.currencyFrom = currencyFrom;
+        this.currencyTo = currencyTo;
+        this.amountFrom = amountFrom;
+        this.amountTo = amountTo;
+        this.date = date;
+    }
 
     public String getCurrencyFrom() {
         return currencyFrom;

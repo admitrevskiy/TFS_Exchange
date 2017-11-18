@@ -50,10 +50,10 @@ public class MainActivity extends FragmentActivity {
         CurrencySelectFragment fragment1 = new CurrencySelectFragment();
         addFragment(fragment1);
          **/
-        CurrencySelectFragment fragment = new CurrencySelectFragment();
+        //CurrencySelectFragment fragment = new CurrencySelectFragment();
         //addFragment(fragment);
 
-        //HisroryFragment fragment = new HisroryFragment();
+        HisroryFragment fragment = new HisroryFragment();
         addFragment(fragment);
 
     }

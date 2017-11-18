@@ -25,6 +25,8 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
     private static final String EXCHANGE_SYMBOLS_AMOUNT = "exchange_symbols_amount";
     private static final String EXCHANGE_RATE = "exchange_rate";
     private static final String EXCHANGE_DATE = "exchange_date";
+    private boolean isSorted;
+    private String curencyFrom, currencyTo;
 
     private DBHelper dbHelper;
     private Exchange exchange;
@@ -35,38 +37,53 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
     public AsyncExchangeDBLoader(Context context) {
         super(context);
         Log.d(TAG, "create AsyncLoader");
+        isSorted = false;
+    }
+
+    public AsyncExchangeDBLoader(Context context, boolean isSorted, String currecyFrom, String currecyTo){
+        super(context);
+        this.isSorted = true;
+        this.curencyFrom = currecyFrom;
+        this.currencyTo = currecyTo;
+        Log.d(TAG, "create sorted AsyncLoader");
     }
 
     @Override
     public List<Exchange> loadInBackground() {
         exchanges = new ArrayList<Exchange>();
         dbHelper = new DBHelper(getContext());
-        db = dbHelper.getReadableDatabase();
+        if (!isSorted) {
+            db = dbHelper.getReadableDatabase();
+            //Создаем курсор
+            Cursor cursor = db.query(TABLE_EXCHANGE_NAME, null, null, null, null, null, null);
 
-        //Создаем курсор
-        Cursor cursor = db.query(TABLE_EXCHANGE_NAME, null, null, null, null, null, null);
+            if (cursor.moveToFirst()) {
+                //Находим индексы колонок
+                int baseColId = cursor.getColumnIndex(EXCHANGE_BASE);
+                int symbolsColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS);
+                int amountFromColId = cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT);
+                int amountToColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT);
+                int rateColId = cursor.getColumnIndex(EXCHANGE_RATE);
+                int dateColId  = cursor.getColumnIndex(EXCHANGE_DATE);
 
-        if (cursor.moveToFirst()) {
-            //Находим индексы колонок
-            int baseColId = cursor.getColumnIndex(EXCHANGE_BASE);
-            int symbolsColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS);
-            int amountFromColId = cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT);
-            int amountToColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT);
-            int rateColId = cursor.getColumnIndex(EXCHANGE_RATE);
-            int dateColId  = cursor.getColumnIndex(EXCHANGE_DATE);
+                do {
+                    String base = cursor.getString(baseColId);
+                    String symbols = cursor.getString(symbolsColId);
+                    double amountFrom = cursor.getDouble(amountFromColId);
+                    double amountTo = cursor.getDouble(amountToColId);
+                    double rate = cursor.getDouble(rateColId);
+                    String date = cursor.getString(dateColId);
+                    exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date));
 
-            do {
-                String base = cursor.getString(baseColId);
-                String symbols = cursor.getString(symbolsColId);
-                double amountFrom = cursor.getDouble(amountFromColId);
-                double amountTo = cursor.getDouble(amountToColId);
-                double rate = cursor.getDouble(rateColId);
-                String date = cursor.getString(dateColId);
-                exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date));
+                } while (cursor.moveToNext());
 
-            } while (cursor.moveToNext());
-
+            }
+            return exchanges;
         }
-        return exchanges;
+        else {
+            return dbHelper.getSortedExchangeHistory(curencyFrom, currencyTo);
+        }
+
+
     }
 }

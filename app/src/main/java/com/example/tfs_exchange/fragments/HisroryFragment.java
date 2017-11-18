@@ -76,7 +76,8 @@ public class HisroryFragment extends Fragment implements LoaderManager.LoaderCal
     public Loader<List<Exchange>> onCreateLoader(int id, Bundle args) {
         Loader<List<Exchange>> loader = null;
         if (id == LOADER_ID) {
-            loader = new AsyncExchangeDBLoader(getContext());
+            loader = new AsyncExchangeDBLoader(getContext(), true, "RUB", "USD");
+            //loader = new AsyncExchangeDBLoader(getContext());
             Log.d(TAG, "onCreateLoader: " + loader.hashCode());
         }
         return loader;
