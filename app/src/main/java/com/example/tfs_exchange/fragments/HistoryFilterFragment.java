@@ -3,6 +3,8 @@ package com.example.tfs_exchange.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +16,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.tfs_exchange.R;
+import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
+import com.example.tfs_exchange.model.Currency;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,8 +34,10 @@ public class HistoryFilterFragment extends Fragment {
     private static final String TAG = "HistoryFilterFragment";
 
     private final String[] periods = {"все время", "неделя", "месяц", "выбрать даты"};
-
     private int period;
+
+    private CurrencyRecyclerListAdapter adapter;
+    private List<Currency> currencies = new ArrayList<Currency>();
 
     @BindView(R.id.filter_recycler_view)
     RecyclerView recyclerView;
@@ -63,10 +72,26 @@ public class HistoryFilterFragment extends Fragment {
 
         ButterKnife.bind(this, historyFilterFragmentRootView);
         disableDate();
+        addCurrencies();
+
+        //RecyclerView
+        adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Currency currency) {
+                //setFaveToDB(currency);
+                Log.d("Currency item ", " " + currency.getName() + " fave changed");
+            }
+        });
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(itemAnimator);
+
+        //Spinner для выбора периода
         ArrayAdapter<String> selectPeriodAdaper = new ArrayAdapter<String>(getContext(), R.layout.spinner_item, periods);
         selectPeriodAdaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         periodSpinner.setAdapter(selectPeriodAdaper);
-
         /** Переписать на butterKnife!**/
         AdapterView.OnItemSelectedListener periodSelectedListener = new AdapterView.OnItemSelectedListener() {
             @Override
@@ -103,5 +128,10 @@ public class HistoryFilterFragment extends Fragment {
         periodSpinner.setOnItemSelectedListener(periodSelectedListener);
 
         return historyFilterFragmentRootView;
+    }
+
+    public void addCurrencies() {
+        currencies.add(new Currency("USD", 0, false));
+        currencies.add(new Currency("RUB", 0, true));
     }
 }
