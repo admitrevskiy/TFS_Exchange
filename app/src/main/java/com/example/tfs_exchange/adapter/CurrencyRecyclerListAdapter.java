@@ -32,6 +32,7 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
 
     //Curr вместо Currency потому что длина тэга не больше 23 символов
     private final String TAG = "CurrRecyclerListAdapter";
+    private boolean isFilter;
 
 
     //Список валют
@@ -61,6 +62,15 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
         this.itemClickListener = itemClickListener;
         this.itemLongClickListener = itemLongClickListener;
         this.favoriteClickListener = favoriteClickListener;
+        isFilter = false;
+        Log.d(TAG, " Constructor");
+    }
+
+    public CurrencyRecyclerListAdapter(List<Currency> currencies,
+                                       OnItemClickListener favoriteClickListener) {
+        this.currencies = currencies;
+        this.itemClickListener = favoriteClickListener;
+        isFilter = true;
         Log.d(TAG, " Constructor");
     }
 
@@ -82,16 +92,27 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
 
         holder.currencyName.setText(currency.getName());
 
-        int iconResourceId = 0;
-
-        //Выбираем иконку - избранная валюта или нет.
-        if (!currency.isFavorite()) {
-            iconResourceId = R.drawable.default_star;
+        /**Чтобы не писать 2 адаптера - вводим boolean параметр для адаптера Filter**/
+        if (isFilter) {
+            int iconResourceId = 0;
+            //Выбираем иконку - избранная валюта или нет.
+            if (!currency.isFavorite()) {
+            } else {
+                iconResourceId = R.drawable.checkmark;
+            }
+            holder.favoriteButton.setImageResource(iconResourceId);
+            holder.bind(currencies.get(position), favoriteClickListener, itemClickListener, itemLongClickListener, position);
         } else {
-            iconResourceId = favorite_star;
+            int iconResourceId = 0;
+            //Выбираем иконку - избранная валюта или нет.
+            if (!currency.isFavorite()) {
+                iconResourceId = R.drawable.default_star;
+            } else {
+                iconResourceId = favorite_star;
+            }
+            holder.favoriteButton.setImageResource(iconResourceId);
+            holder.bind(currencies.get(position), favoriteClickListener, itemClickListener, itemLongClickListener, position);
         }
-        holder.favoriteButton.setImageResource(iconResourceId);
-        holder.bind(currencies.get(position), favoriteClickListener, itemClickListener, itemLongClickListener, position);
         Log.d(TAG, " onBindViewHolder");
     }
 
@@ -133,6 +154,16 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
                 public boolean onLongClick(View view) {
                     itemLongClickListener.onItemLongClick(currency, id);
                     return false;
+                }
+            });
+            Log.d(TAG, " bind " + currency.getName());
+        }
+
+        public void bind(final Currency currency, final OnItemClickListener favoriteListener, final int id) {
+            favoriteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    favoriteListener.onItemClick(currency);
                 }
             });
             Log.d(TAG, " bind " + currency.getName());

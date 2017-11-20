@@ -24,6 +24,7 @@ import com.example.tfs_exchange.comparators.FavoriteComparator;
 import com.example.tfs_exchange.fragments.CurrencySelectFragment;
 import com.example.tfs_exchange.fragments.ExchangeFragment;
 import com.example.tfs_exchange.fragments.HisroryFragment;
+import com.example.tfs_exchange.fragments.HistoryFilterFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +54,8 @@ public class MainActivity extends FragmentActivity {
         //CurrencySelectFragment fragment = new CurrencySelectFragment();
         //addFragment(fragment);
 
-        HisroryFragment fragment = new HisroryFragment();
+        //HisroryFragment fragment = new HisroryFragment();
+        HistoryFilterFragment fragment = new HistoryFilterFragment();
         addFragment(fragment);
 
     }
