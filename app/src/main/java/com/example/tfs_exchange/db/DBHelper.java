@@ -8,10 +8,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Exchange;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by pusya on 16.10.17.
@@ -44,11 +48,13 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String CURRENCY_BASE = "currency_base";
     private static final String LAST_USED = "last_used";
     private static final String FAVORITE = "favorite";
+    private static final String FILTER = "filter";
 
     private static final String CURRENCY_TABLE = "create table " + TABLE_CURRENCY_NAME + " ("
             + CURRENCY_BASE + " string primary key, "
             + LAST_USED + " integer, "
-            + FAVORITE + " integer "
+            + FAVORITE + " integer, "
+            + FILTER + " integer "
             + ");";
 
     private static final String EXCHANGE_TABLE = "create table " + TABLE_EXCHANGE_NAME + " ("
@@ -60,9 +66,15 @@ public class DBHelper extends SQLiteOpenHelper {
             + EXCHANGE_DATE + " String "
             + ");";
 
+    private static final String GET_HISTORY = "SELECT * FROM " + TABLE_EXCHANGE_NAME;
+
     private String getExchangeHistory(String currencyFrom, String currencyTo) {
         return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE " + EXCHANGE_BASE + "= '"
                 + currencyFrom + "' AND " + EXCHANGE_SYMBOLS + " = '" + currencyTo + "'";
+    }
+
+    private String getFilter(String name) {
+        return "SELECT * FROM " + TABLE_CURRENCY_NAME + " WHERE " + CURRENCY_BASE + " = '" + name + "'";
     }
 
     @Override
@@ -77,6 +89,48 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
     }
+
+    public List<Currency> getFilteredCurrencies() {
+        List<Currency> currencies = new ArrayList<>();
+        Set<Currency> currenciesSet = new HashSet<>();
+        try (SQLiteDatabase db = this.getReadableDatabase();) {
+            try (Cursor cursor = db.rawQuery(GET_HISTORY, null)) {
+                if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                    do {
+                        String nameFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
+                        String nameTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
+                        currenciesSet.add(new Currency(nameTo));
+                        Log.d(TAG, "currency " + nameTo + "was added to Set");
+                        currenciesSet.add(new Currency(nameFrom));
+                        Log.d(TAG, "currency " + nameFrom + "was added to Set");
+                    } while (cursor.moveToNext());
+                }
+            } catch (SQLException e) {
+                Log.d(TAG, e.getMessage());
+            }
+
+            for (Currency currency: currenciesSet) {
+                try (Cursor cursor = db.rawQuery(getFilter(currency.getName()), null)) {
+                    if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                        int filter = cursor.getInt(cursor.getColumnIndex(FILTER));
+                        if (filter == 0) {
+                            currencies.add(new Currency(currency.getName(), false));
+                            Log.d(TAG, "currency " + currency.getName() + "was added to List with isFilter = false");
+                        } else {
+                            currencies.add(new Currency(currency.getName(), true));
+                            Log.d(TAG, "currency " + currency.getName() + "was added to List with isFilter = true");
+                        }
+                    }
+                } catch (SQLException e) {
+                    Log.d(TAG, e.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            Log.d(TAG, e.getMessage());
+        }
+        return currencies;
+    }
+
 
     public List<Exchange> getSortedExchangeHistory(String currencyFrom, String currencyTo) {
         List<Exchange> exchanges = new ArrayList<>();
@@ -104,38 +158,38 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     private void fillCurrencyData(SQLiteDatabase currencydb) {
-        currencydb.execSQL("INSERT INTO currency_name VALUES('USD', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('RUB', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('EUR', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('AUD', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('BGN', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('BRL', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('CAD', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('CHF', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('CNY', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('CZK', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('DKK', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('GBP', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('HKD', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('HRK', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('HUF', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('IDR', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('ILS', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('INR', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('JPY', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('KRW', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('MXN', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('MYR', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('NOK', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('NZD', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('PHP', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('PLN', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('RON', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('SEK', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('SGD', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('THB', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('TRY', 1, 0);");
-        currencydb.execSQL("INSERT INTO currency_name VALUES('ZAR', 1, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('USD', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('RUB', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('EUR', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('AUD', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('BGN', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('BRL', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('CAD', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('CHF', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('CNY', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('CZK', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('DKK', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('GBP', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('HKD', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('HRK', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('HUF', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('IDR', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('ILS', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('INR', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('JPY', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('KRW', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('MXN', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('MYR', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('NOK', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('NZD', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('PHP', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('PLN', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('RON', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('SEK', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('SGD', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('THB', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('TRY', 1, 0, 0);");
+        currencydb.execSQL("INSERT INTO currency_name VALUES('ZAR', 1, 0, 0);");
     }
 
 

@@ -96,12 +96,13 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
         if (isFilter) {
             int iconResourceId = 0;
             //Выбираем иконку - избранная валюта или нет.
-            if (!currency.isFavorite()) {
+            if (!currency.isFilter()) {
+                iconResourceId = R.drawable.dots;
             } else {
                 iconResourceId = R.drawable.checkmark;
             }
             holder.favoriteButton.setImageResource(iconResourceId);
-            holder.bind(currencies.get(position), favoriteClickListener, itemClickListener, itemLongClickListener, position);
+            holder.bind(currencies.get(position), itemClickListener, position);
         } else {
             int iconResourceId = 0;
             //Выбираем иконку - избранная валюта или нет.
@@ -159,11 +160,11 @@ public class CurrencyRecyclerListAdapter extends RecyclerView.Adapter<CurrencyRe
             Log.d(TAG, " bind " + currency.getName());
         }
 
-        public void bind(final Currency currency, final OnItemClickListener favoriteListener, final int id) {
-            favoriteButton.setOnClickListener(new View.OnClickListener() {
+        public void bind(final Currency currency, final OnItemClickListener itemClickListener, final int id) {
+            currencyName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    favoriteListener.onItemClick(currency);
+                    itemClickListener.onItemClick(currency);
                 }
             });
             Log.d(TAG, " bind " + currency.getName());

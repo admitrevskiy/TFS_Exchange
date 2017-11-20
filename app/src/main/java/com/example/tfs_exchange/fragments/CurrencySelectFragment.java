@@ -86,9 +86,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
         loader.forceLoad();
         /** ------------------------------------------**/
-
         super.onCreate(savedInstanceState);
-
     }
 
     @Nullable
@@ -108,7 +106,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void onItemClick(Currency currency) {
                 setFaveToDB(currency);
-                Log.d("Currency item ", " " + currency.getName() + " fave changed");
+                Log.d(TAG, "Currency item " + currency.getName() + " fave changed");
             }
 
         }, new CurrencyRecyclerListAdapter.OnItemClickListener() {
@@ -145,7 +143,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
-        Log.d(TAG, " onCreareView" + this.hashCode());
+        Log.d(TAG, " onCreateView" + this.hashCode());
         return firstFragmentRootView;
     }
 

@@ -31,59 +31,72 @@ public class AsyncCurrencyDBLoader extends AsyncTaskLoader<List<Currency>> {
     private FavoriteComparator faveComp = new FavoriteComparator();
     private LastUsedComparator lastUsedComp = new LastUsedComparator();
     private SQLiteDatabase db;
+    private boolean isFilter;
 
     public static final String TAG = "AsyncCurrencyLoader";
 
     public AsyncCurrencyDBLoader(Context context) {
         super(context);
+        isFilter = false;
         Log.d(TAG, hashCode() + " create AsyncLoader");
     }
 
+    public AsyncCurrencyDBLoader(Context context, boolean isFilter) {
+        super(context);
+        this.isFilter = isFilter;
+        Log.d(TAG, hashCode() + " create AsyncLoader");
+    }
+
+
     @Override
     public List<Currency> loadInBackground() {
-         currencies = new ArrayList<Currency>();
-
-        //подключаем Data Base Helper, получаем из него БД для чтения
+        currencies = new ArrayList<Currency>();
         dbHelper = new DBHelper(getContext());
-        db = dbHelper.getReadableDatabase();
+        if (isFilter) {
+            return dbHelper.getFilteredCurrencies();
+        } else {
+             //подключаем Data Base Helper, получаем из него БД для чтения
+             db = dbHelper.getReadableDatabase();
 
-        //Создаем курсор
-        Cursor cursor = db.query("currency_name", null, null, null, null, null, null);
+             //Создаем курсор
+             Cursor cursor = db.query("currency_name", null, null, null, null, null, null);
 
-        //Если БД не пустая
-        if (cursor.moveToFirst()) {
-            //Находим индексы колонок
-            int baseColId = cursor.getColumnIndex("currency_base");
-            int lastUsedColId = cursor.getColumnIndex("last_used");
-            int favoriteColId = cursor.getColumnIndex("favorite");
+             //Если БД не пустая
+             if (cursor.moveToFirst()) {
+                 //Находим индексы колонок
+                 int baseColId = cursor.getColumnIndex("currency_base");
+                 int lastUsedColId = cursor.getColumnIndex("last_used");
+                 int favoriteColId = cursor.getColumnIndex("favorite");
 
-            do {
-                //Создаем объект типа Currency и присваиваем ему значения из БД
-                currency = new Currency();
-                currency.setName(cursor.getString(baseColId));
-                currency.setLastUse(cursor.getInt(lastUsedColId));
-                int favorite = cursor.getInt(favoriteColId);
+                 do {
+                     //Создаем объект типа Currency и присваиваем ему значения из БД
+                     currency = new Currency();
+                     currency.setName(cursor.getString(baseColId));
+                     currency.setLastUse(cursor.getInt(lastUsedColId));
+                     int favorite = cursor.getInt(favoriteColId);
 
-                //В SQLite нет типа boolean, поэтому НЕ избранные валюты имеют в колонке favorite 0, а избранные 1
-                if (favorite == 0)
-                {
-                    currencies.add(currency);
-                    currency.setFavorite(false);
-                    Log.d(TAG, " " +currency.getName() + " was added");
-                } else {
-                    currencies.add(0, currency);
-                    currency.setFavorite(true);
-                }
+                     //В SQLite нет типа boolean, поэтому НЕ избранные валюты имеют в колонке favorite 0, а избранные 1
+                     if (favorite == 0)
+                     {
+                         currencies.add(currency);
+                         currency.setFavorite(false);
+                         Log.d(TAG, " " +currency.getName() + " was added");
+                     } else {
+                         currencies.add(0, currency);
+                         currency.setFavorite(true);
+                     }
 
-                //Добавляем валюту в List с валютами
+                     //Добавляем валюту в List с валютами
 
-            } while (cursor.moveToNext());
-        }
+                 } while (cursor.moveToNext());
+             }
 
-        cursor.close();
-        //Закрываем БД
-        db.close();
-        sortCurrencies();
+             cursor.close();
+             //Закрываем БД
+             db.close();
+             sortCurrencies();
+         }
+
         return currencies;
     }
 
