@@ -46,10 +46,7 @@ import butterknife.ButterKnife;
 public class CurrencySelectFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Currency>> {
     private static final int LOADER_ID = 1;
 
-    private final static String CURRENCY_TAG = "currency";
     private final static String TAG = "CurrencySelectFragment";
-    private ContentValues cv;
-    private SQLiteDatabase db;
     private DBHelper dbHelper;
     private FavoriteComparator faveComp;
     private LastUsedComparator lastUsedComp;
@@ -96,6 +93,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
 
         ButterKnife.bind(this, firstFragmentRootView);
 
+        dbHelper = new DBHelper(getContext());
         faveComp = new FavoriteComparator();
         lastUsedComp = new LastUsedComparator();
         longClickedComp = new LongClickedComparator();
@@ -105,7 +103,9 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                setFaveToDB(currency);
+                //setFaveToDB(currency);
+                dbHelper.setFaveToDB(currency);
+                sortCurrencies();
                 Log.d(TAG, "Currency item " + currency.getName() + " fave changed");
             }
 
@@ -113,7 +113,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void onItemClick(Currency currency) {
                 Log.d("Currency item ", " " + currency.getName() + " short clicked");
-                setTimeToDB(currency);
+                dbHelper.setTimeToDB(currency);
                 if (noItemLongClicked) {
                     replaceExchangeFragment(currency.getName(), getCurrencyForExchange(currency));
                 }
@@ -130,7 +130,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
                     adapter.notifyDataSetChanged();
                     noItemLongClicked = false;
                     selectedCurrency = currency;
-                    setTimeToDB(currency);
+                    dbHelper.setTimeToDB(currency);
                 }
                 else {
                     Log.d("Currency item ", currency.getName() + " long clicked, but another currency is already choosed" );
@@ -178,41 +178,6 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
     }
 
-    //Записываем в БД изменение избранности валюты
-    private void setFaveToDB(Currency currency) {
-        dbHelper = new DBHelper(getContext());
-        db = dbHelper.getWritableDatabase();
-        cv = new ContentValues();
-        int changeFavorite;
-        if (currency.isFavorite())
-        {
-            currency.setFavorite(false);
-            changeFavorite = 0;
-        } else {
-            currency.setFavorite(true);
-            changeFavorite = 1;
-        }
-        cv.put("FAVORITE", changeFavorite);
-        db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
-        Log.d(CURRENCY_TAG, " " + currency.getName() + " favorite changed" );
-        sortCurrencies();
-        db.close();
-    }
-
-    //Записываем в БД время последнего использования
-    private void setTimeToDB(Currency currency) {
-        dbHelper = new DBHelper(getContext());
-        db = dbHelper.getWritableDatabase();
-        cv = new ContentValues();
-        long lastUse = new Date().getTime();
-        int time = (int)lastUse/1000;
-        currency.setLastUse(lastUse);
-        cv.put("LAST_USED", time);
-        db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
-        Log.d(CURRENCY_TAG, " " + currency.getName() + " lastUsed changed" );
-        db.close();
-    }
-
     //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
     private void sortCurrencies() {
         Collections.sort(currencies, lastUsedComp);
@@ -255,9 +220,6 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         super.onDetach();
         if (dbHelper != null) {
             dbHelper.close();
-        }
-        if (db != null) {
-            db.close();
         }
     }
 

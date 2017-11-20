@@ -11,7 +11,9 @@ import android.util.Log;
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Exchange;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +33,8 @@ public class DBHelper extends SQLiteOpenHelper {
     private SQLiteDatabase db;
     private DBHelper dbHelper;
 
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd '\n' HH:mm:ss");
+
     //Назначаем имя базы данных и версию
     private static final String DATA_BASE_NAME = "exchangerDB";
     private static final int DATA_BASE_VERSION = 1;
@@ -42,7 +46,6 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String EXCHANGE_SYMBOLS_AMOUNT = "exchange_symbols_amount";
     private static final String EXCHANGE_RATE = "exchange_rate";
     private static final String EXCHANGE_DATE = "exchange_date";
-
 
     private static final String TABLE_CURRENCY_NAME = "currency_name";
     private static final String CURRENCY_BASE = "currency_base";
@@ -89,6 +92,55 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
     }
+
+    //Запись обмена в БД
+    public void setExchangeToDB(String currencyFrom, String currencyTo, double amountFrom, double amountTo, double rate) {
+        cv = new ContentValues();
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
+            Date date = new Date();
+            cv.put("EXCHANGE_BASE", currencyFrom);
+            cv.put("EXCHANGE_BASE_AMOUNT", amountFrom);
+            cv.put("EXCHANGE_SYMBOLS", currencyTo);
+            cv.put("EXCHANGE_SYMBOLS_AMOUNT", amountTo);
+            cv.put("EXCHANGE_RATE", rate);
+            cv.put("EXCHANGE_DATE", dateFormat.format(date));
+            db.insert("exchange_name", null, cv);
+        }
+    }
+
+    //Запись избранных в БД
+    public void setFaveToDB(Currency currency) {
+        cv = new ContentValues();
+        int changeFavorite;
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
+            if (currency.isFavorite())
+            {
+                currency.setFavorite(false);
+                changeFavorite = 0;
+            } else {
+                currency.setFavorite(true);
+                changeFavorite = 1;
+            }
+            cv.put(FAVORITE, changeFavorite);
+            db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
+            Log.d(TAG, " " + currency.getName() + " favorite changed" );
+            //sortCurrencies();
+        }
+    }
+
+    //Записываем в БД время последнего использования
+    public void setTimeToDB(Currency currency) {
+        cv = new ContentValues();
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
+            long lastUse = new Date().getTime();
+            int time = (int)lastUse/1000;
+            currency.setLastUse(lastUse);
+            cv.put("LAST_USED", time);
+            db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
+            Log.d(TAG, " " + currency.getName() + " lastUsed changed" );
+        }
+    }
+
 
     public List<Currency> getFilteredCurrencies() {
         List<Currency> currencies = new ArrayList<>();

@@ -47,6 +47,8 @@ public class ExchangeFragment extends Fragment {
     private SQLiteDatabase db;
     private DBHelper dbHelper;
 
+    private double amountFrom;
+    private double amountTo;
     private double rate;
 
     private Disposable rateSubscription;
@@ -85,7 +87,10 @@ public class ExchangeFragment extends Fragment {
     //Слушатель нажатия на кнопку из ButterKnife
     @OnClick(R.id.exchange_button)
     void onSaveClick() {
+        amountFrom = Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText()));
+        amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
         setExchangeToDB();
+//        dbHelper.setExchangeToDB(currencyFrom, currencyTo, amountFrom, amountTo, rate);
         Log.d(TAG, " button clicked");
     }
 
@@ -173,6 +178,7 @@ public class ExchangeFragment extends Fragment {
         Log.d(TAG, "onDetach()");
     }
 
+    /** перенести в DBHelper **/
     private void setExchangeToDB() {
         dbHelper = new DBHelper(getContext());
         db = dbHelper.getWritableDatabase();

@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -26,7 +27,10 @@ import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Currency;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -48,6 +52,8 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
 
     private CurrencyRecyclerListAdapter adapter;
     private List<Currency> currencies = new ArrayList<Currency>();
+    private Set<Currency> filterCurrencies = new HashSet<>();
+    private Set<String> savedCurrencies;
 
     @BindView(R.id.filter_recycler_view)
     RecyclerView recyclerView;
@@ -60,6 +66,9 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
 
     @BindView(R.id.date_to_spinner)
     Spinner dateToSpinner;
+
+    @BindView(R.id.save_filter)
+    android.support.design.widget.FloatingActionButton saveFilter;
 
     private void disableDate() {
         dateFromSpinner.setEnabled(false);
@@ -94,7 +103,6 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         ButterKnife.bind(this, historyFilterFragmentRootView);
         disableDate();
         Log.d(TAG, currencies.toString());
-        //addCurrencies();
 
         //RecyclerView
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
@@ -114,6 +122,7 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         ArrayAdapter<String> selectPeriodAdaper = new ArrayAdapter<String>(getContext(), R.layout.spinner_item, periods);
         selectPeriodAdaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         periodSpinner.setAdapter(selectPeriodAdaper);
+
         /** Переписать на butterKnife!**/
         AdapterView.OnItemSelectedListener periodSelectedListener = new AdapterView.OnItemSelectedListener() {
             @Override
@@ -148,13 +157,20 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
             }
         };
         periodSpinner.setOnItemSelectedListener(periodSelectedListener);
+
+        saveFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getFilterCurrencies();
+                if (filterCurrencies.size() > 0)
+                {
+                    Log.d(TAG, "fab is clicked \n" + getFilterCurrencies().toString());
+                }
+
+            }
+        });
         Log.d(TAG, " onCreateView" + this.hashCode());
         return historyFilterFragmentRootView;
-    }
-
-    public void addCurrencies() {
-        currencies.add(new Currency("USD", 0, false));
-        currencies.add(new Currency("RUB", 0, true));
     }
 
     @Override
@@ -202,5 +218,30 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         //sortCurrencies();
         db.close();
         adapter.notifyDataSetChanged();
+    }
+
+    private Set<String> getFilterCurrencies() {
+        savedCurrencies = new HashSet<>();
+        if (currencies.size() > 0) {
+            for (Currency currency : currencies) {
+                if (currency.isFilter()) {
+                    filterCurrencies.add(currency);
+                }
+            }
+        }
+
+        //Чтобы избежать ConcurrentModificationException приходится явно использовать итератор
+        for (Iterator<Currency> iterator = filterCurrencies.iterator(); iterator.hasNext();) {
+            Currency currency = iterator.next();
+            if (!currency.isFilter()) {
+                iterator.remove();
+            }
+        }
+
+        for (Iterator<Currency> iterator = filterCurrencies.iterator(); iterator.hasNext();) {
+            Currency currency = iterator.next();
+            savedCurrencies.add(currency.getName());
+        }
+        return savedCurrencies;
     }
 }

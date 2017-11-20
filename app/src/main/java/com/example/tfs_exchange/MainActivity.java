@@ -52,8 +52,8 @@ public class MainActivity extends FragmentActivity {
         addFragment(fragment1);
          **/
         //CurrencySelectFragment fragment = new CurrencySelectFragment();
-        //HisroryFragment fragment = new HisroryFragment();
-        HistoryFilterFragment fragment = new HistoryFilterFragment();
+        HisroryFragment fragment = new HisroryFragment();
+        //HistoryFilterFragment fragment = new HistoryFilterFragment();
         addFragment(fragment);
 
     }
