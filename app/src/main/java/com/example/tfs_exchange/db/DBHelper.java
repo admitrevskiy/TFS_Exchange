@@ -46,6 +46,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String EXCHANGE_SYMBOLS_AMOUNT = "exchange_symbols_amount";
     private static final String EXCHANGE_RATE = "exchange_rate";
     private static final String EXCHANGE_DATE = "exchange_date";
+    private static final String EXCHANGE_TIME = "exchange_time";
 
     private static final String TABLE_CURRENCY_NAME = "currency_name";
     private static final String CURRENCY_BASE = "currency_base";
@@ -66,7 +67,8 @@ public class DBHelper extends SQLiteOpenHelper {
             + EXCHANGE_SYMBOLS + " string, "
             + EXCHANGE_SYMBOLS_AMOUNT + " real, "
             + EXCHANGE_RATE + " real, "
-            + EXCHANGE_DATE + " String "
+            + EXCHANGE_DATE + " String, "
+            + EXCHANGE_TIME + " String "
             + ");";
 
     private static final String GET_HISTORY = "SELECT * FROM " + TABLE_EXCHANGE_NAME;
@@ -76,6 +78,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 + currencyFrom + "' AND " + EXCHANGE_SYMBOLS + " = '" + currencyTo + "'";
     }
 
+    private String getExchangeHistory(Set<String> currencies) {
+        String SQLQuery = "";
+        for (String currency: currencies)
+        {
+            SQLQuery += EXCHANGE_BASE + " = '" + currency + "' OR " + EXCHANGE_SYMBOLS + " = '" + currency + "' OR ";
+        }
+        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE " + SQLQuery.substring(0, SQLQuery.length() - 3);
+    }
     private String getFilter(String name) {
         return "SELECT * FROM " + TABLE_CURRENCY_NAME + " WHERE " + CURRENCY_BASE + " = '" + name + "'";
     }
@@ -184,16 +194,19 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public List<Exchange> getSortedExchangeHistory(String currencyFrom, String currencyTo) {
+    public List<Exchange> getSortedExchangeHistory(Set<String> currencies) {
         List<Exchange> exchanges = new ArrayList<>();
         try (SQLiteDatabase db = this.getReadableDatabase();
-             Cursor cursor = db.rawQuery(getExchangeHistory(currencyFrom, currencyTo), null)) {
+             Cursor cursor = db.rawQuery(getExchangeHistory(currencies), null)) {
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 do {
+                    String currencyFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
+                    String currencyTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
                     double amountFrom = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT));
                     double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
                     String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
-                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date));
+                    String time = cursor.getString(cursor.getColumnIndex(EXCHANGE_TIME));
+                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time));
                     Log.d(TAG, currencyFrom + " " + currencyTo + " " + date);
                 } while (cursor.moveToNext());
             }

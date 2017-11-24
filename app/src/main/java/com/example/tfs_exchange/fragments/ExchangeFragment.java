@@ -38,7 +38,7 @@ import java.util.Date;
 
 public class ExchangeFragment extends Fragment {
     private static final String TAG = "ExchangeFragment";
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd '\n' HH:mm:ss");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy '\n' HH:mm:ss");
 
     private String currencyFrom;
     private String currencyTo;
@@ -183,13 +183,15 @@ public class ExchangeFragment extends Fragment {
         dbHelper = new DBHelper(getContext());
         db = dbHelper.getWritableDatabase();
         cv = new ContentValues();
-        Date date = new Date();
+        Date dateNow = new Date();
+        String[] dateAndTime = dateFormat.format(dateNow).split("\n");
         cv.put("EXCHANGE_BASE", currencyFrom);
         cv.put("EXCHANGE_BASE_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText())));
         cv.put("EXCHANGE_SYMBOLS", currencyTo);
         cv.put("EXCHANGE_SYMBOLS_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountToEdit.getText())));
         cv.put("EXCHANGE_RATE", rate);
-        cv.put("EXCHANGE_DATE", dateFormat.format(date));
+        cv.put("EXCHANGE_DATE", dateAndTime[0]);
+        cv.put("EXCHANGE_TIME", dateAndTime[1]);
         db.insert("exchange_name", null, cv);
         db.close();
     }

@@ -1,5 +1,7 @@
 package com.example.tfs_exchange.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -19,7 +21,9 @@ import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.HistoryRecyclerListAdapter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,8 +36,13 @@ import butterknife.ButterKnife;
 public class HisroryFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Exchange>> {
 
     private static final int LOADER_ID = 2;
-
     private final static String TAG = "HistoryFragment";
+
+    private int periodFilter;
+    private Set<String> currencyFilter;
+    private String dateFromFilter, dateToFilter;
+
+    private SharedPreferences sharedPrefs;
 
     private List<Exchange> exchanges = new ArrayList<Exchange>();
 
@@ -44,7 +53,21 @@ public class HisroryFragment extends Fragment implements LoaderManager.LoaderCal
 
 
     @Override
+    public void onPause() {
+        super.onPause();
+        exchanges = new ArrayList<>();
+    }
+    @Override
     public void onCreate(Bundle savedInstanceState) {
+        sharedPrefs = this.getActivity().getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
+        if (sharedPrefs.contains(getString(R.string.period_id))) {
+            periodFilter = sharedPrefs.getInt(getString(R.string.period_id), 0);
+            Log.d(TAG, "Period ID: " + String.valueOf(periodFilter));
+        }
+        if (sharedPrefs.contains(getString(R.string.currencies))) {
+            currencyFilter = sharedPrefs.getStringSet(getString(R.string.currencies), new HashSet<>());
+        }
+        Log.d(TAG, "Period ID: " + String.valueOf(periodFilter));
         /** Загрузка обменов из БД происходит асинхронно **/
         getLoaderManager().initLoader(LOADER_ID, null, this);
         Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
@@ -75,9 +98,12 @@ public class HisroryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public Loader<List<Exchange>> onCreateLoader(int id, Bundle args) {
         Loader<List<Exchange>> loader = null;
+        HashSet<String> set = new HashSet<>();
+        //set.add("EUR");
+        //set.add("HDK");
         if (id == LOADER_ID) {
-            //loader = new AsyncExchangeDBLoader(getContext(), true, "RUB", "USD");
-            loader = new AsyncExchangeDBLoader(getContext());
+            loader = new AsyncExchangeDBLoader(getContext(), true, currencyFilter);
+            //loader = new AsyncExchangeDBLoader(getContext());
             Log.d(TAG, "onCreateLoader: " + loader.hashCode());
         }
         return loader;

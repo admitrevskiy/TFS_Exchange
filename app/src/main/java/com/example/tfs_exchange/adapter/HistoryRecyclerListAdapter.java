@@ -31,7 +31,6 @@ public class HistoryRecyclerListAdapter extends RecyclerView.Adapter<HistoryRecy
 
     private final String TAG = "HistRecyclerListAdapter";
     private List<Exchange> exchanges;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd '\n' HH:mm:ss");
 
     public HistoryRecyclerListAdapter(List<Exchange> exchanges) {
         this.exchanges = exchanges;
@@ -55,7 +54,7 @@ public class HistoryRecyclerListAdapter extends RecyclerView.Adapter<HistoryRecy
         holder.currencyToTextView.setText(exchange.getCurrencyTo());
         holder.amountFromTextView.setText(String.valueOf(exchange.getAmountFrom()));
         holder.amountToTextView.setText(String.valueOf(exchange.getAmountTo()));
-        holder.dateTextView.setText(exchange.getDate());
+        holder.dateTextView.setText(exchange.getDate() + "\n" + exchange.getTime());
         Log.d(TAG, " onBindViewHolder");
     }
 

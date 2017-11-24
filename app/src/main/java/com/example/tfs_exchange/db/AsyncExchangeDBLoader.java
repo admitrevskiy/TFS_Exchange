@@ -10,6 +10,7 @@ import com.example.tfs_exchange.model.Exchange;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by pusya on 10.11.17.
@@ -25,8 +26,10 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
     private static final String EXCHANGE_SYMBOLS_AMOUNT = "exchange_symbols_amount";
     private static final String EXCHANGE_RATE = "exchange_rate";
     private static final String EXCHANGE_DATE = "exchange_date";
+    private static final String EXCHANGE_TIME = "exchange_time";
     private boolean isSorted;
     private String curencyFrom, currencyTo;
+    private Set<String> currencies;
 
     private DBHelper dbHelper;
     private Exchange exchange;
@@ -40,11 +43,10 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
         isSorted = false;
     }
 
-    public AsyncExchangeDBLoader(Context context, boolean isSorted, String currecyFrom, String currecyTo){
+    public AsyncExchangeDBLoader(Context context, boolean isSorted, Set<String> currencies){
         super(context);
         this.isSorted = true;
-        this.curencyFrom = currecyFrom;
-        this.currencyTo = currecyTo;
+        this.currencies = currencies;
         Log.d(TAG, "create sorted AsyncLoader");
     }
 
@@ -65,6 +67,7 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
                 int amountToColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT);
                 int rateColId = cursor.getColumnIndex(EXCHANGE_RATE);
                 int dateColId  = cursor.getColumnIndex(EXCHANGE_DATE);
+                int timeColId  = cursor.getColumnIndex(EXCHANGE_TIME);
 
                 do {
                     String base = cursor.getString(baseColId);
@@ -73,15 +76,18 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
                     double amountTo = cursor.getDouble(amountToColId);
                     double rate = cursor.getDouble(rateColId);
                     String date = cursor.getString(dateColId);
-                    exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date));
+                    String time = cursor.getString(timeColId);
+                    Log.d(TAG, time);
+                    exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date, time));
 
                 } while (cursor.moveToNext());
 
             }
+            Log.d(TAG, exchanges.toString());
             return exchanges;
         }
         else {
-            return dbHelper.getSortedExchangeHistory(curencyFrom, currencyTo);
+            return dbHelper.getSortedExchangeHistory(currencies);
         }
 
 

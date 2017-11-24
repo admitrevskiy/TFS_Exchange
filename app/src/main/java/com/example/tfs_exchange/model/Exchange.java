@@ -15,22 +15,25 @@ public class Exchange {
     private double amountTo;
     private double rate;
     private String date;
+    private String time;
 
-    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, double rate, String date) {
+    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, double rate, String date, String time) {
         this.currencyFrom = currencyFrom;
         this.currencyTo = currencyTo;
         this.amountFrom = amountFrom;
         this.amountTo = amountTo;
         this.rate = rate;
         this.date = date;
+        this.time = time;
     }
 
-    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, String date) {
+    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, String date, String time) {
         this.currencyFrom = currencyFrom;
         this.currencyTo = currencyTo;
         this.amountFrom = amountFrom;
         this.amountTo = amountTo;
         this.date = date;
+        this.time = time;
     }
 
     public String getCurrencyFrom() {
@@ -52,6 +55,8 @@ public class Exchange {
     public String getDate() {
         return date;
     }
+
+    public String getTime() { return time; }
 
     public void setCurrencyFrom(String currencyFrom) {
         this.currencyFrom = currencyFrom;

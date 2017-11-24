@@ -1,6 +1,9 @@
 package com.example.tfs_exchange.fragments;
 
+import android.app.DatePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -27,6 +32,7 @@ import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Currency;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +40,7 @@ import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by pusya on 20.11.17.
@@ -49,11 +56,13 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
     private DBHelper dbHelper;
     private ContentValues cv;
     SQLiteDatabase db;
-
+    SharedPreferences settings;
     private CurrencyRecyclerListAdapter adapter;
     private List<Currency> currencies = new ArrayList<Currency>();
     private Set<Currency> filterCurrencies = new HashSet<>();
     private Set<String> savedCurrencies;
+    private int mYear, mMonth, mDay;
+    private ToastHelper toastHelper;
 
     @BindView(R.id.filter_recycler_view)
     RecyclerView recyclerView;
@@ -61,27 +70,33 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
     @BindView(R.id.period_spinner)
     Spinner periodSpinner;
 
-    @BindView(R.id.date_from_spinner)
-    Spinner dateFromSpinner;
+    @BindView(R.id.date_from_edit)
+    TextView dateFromEdit;
 
-    @BindView(R.id.date_to_spinner)
-    Spinner dateToSpinner;
+    @BindView(R.id.date_to_edit)
+    TextView dateToEdit;
 
     @BindView(R.id.save_filter)
     android.support.design.widget.FloatingActionButton saveFilter;
 
+    @OnClick (R.id.save_filter)
+    public void setSettings() {
+        saveFilter();
+    }
+
+
     private void disableDate() {
-        dateFromSpinner.setEnabled(false);
-        dateToSpinner.setEnabled(false);
-        dateFromSpinner.setVisibility(View.GONE);
-        dateToSpinner.setVisibility(View.GONE);
+        dateFromEdit.setEnabled(false);
+        dateToEdit.setEnabled(false);
+        dateFromEdit.setVisibility(View.GONE);
+        dateToEdit.setVisibility(View.GONE);
     }
 
     private void enableDate() {
-        dateFromSpinner.setEnabled(true);
-        dateToSpinner.setEnabled(true);
-        dateFromSpinner.setVisibility(View.VISIBLE);
-        dateToSpinner.setVisibility(View.VISIBLE);
+        dateFromEdit.setEnabled(true);
+        dateToEdit.setEnabled(true);
+        dateFromEdit.setVisibility(View.VISIBLE);
+        dateToEdit.setVisibility(View.VISIBLE);
         Log.d(TAG, "enableDate");
     }
 
@@ -104,6 +119,10 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         disableDate();
         Log.d(TAG, currencies.toString());
 
+        toastHelper = new ToastHelper();
+        settings = this.getActivity().getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
+
+
         //RecyclerView
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
@@ -122,6 +141,22 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         ArrayAdapter<String> selectPeriodAdaper = new ArrayAdapter<String>(getContext(), R.layout.spinner_item, periods);
         selectPeriodAdaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         periodSpinner.setAdapter(selectPeriodAdaper);
+
+        dateFromEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callDatePicker(dateFromEdit);
+                Log.d(TAG, "date from");
+            }
+        });
+
+        dateToEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callDatePicker(dateToEdit);
+                Log.d(TAG, "date to");
+            }
+        });
 
         /** Переписать на butterKnife!**/
         AdapterView.OnItemSelectedListener periodSelectedListener = new AdapterView.OnItemSelectedListener() {
@@ -158,17 +193,20 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         };
         periodSpinner.setOnItemSelectedListener(periodSelectedListener);
 
+
         saveFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getFilterCurrencies();
                 if (filterCurrencies.size() > 0)
                 {
+                    saveFilter();
                     Log.d(TAG, "fab is clicked \n" + getFilterCurrencies().toString());
                 }
 
             }
         });
+
         Log.d(TAG, " onCreateView" + this.hashCode());
         return historyFilterFragmentRootView;
     }
@@ -243,5 +281,43 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
             savedCurrencies.add(currency.getName());
         }
         return savedCurrencies;
+    }
+
+    protected void saveFilter() {
+        if (periodSpinner.getSelectedItemPosition() == 3 && (dateFromEdit.getText().equals(getString(R.string.date_from)) || dateToEdit.getText().equals(getString(R.string.date_to)))) {
+            toastHelper.showToast(getActivity(), getString(R.string.insert_date_message));
+        } else if (periodSpinner.getSelectedItemPosition() == 3 && dateFromEdit.getText().toString().compareTo(dateToEdit.getText().toString()) > 0) {
+            toastHelper.showToast(getActivity(), getString(R.string.wrong_date_message));
+        } else {
+            SharedPreferences.Editor editor = settings.edit();
+            editor.clear();
+            editor.putInt(getString(R.string.period_id), periodSpinner.getSelectedItemPosition());
+            if (savedCurrencies.size() > 0) {
+                editor.putStringSet(getString(R.string.currencies), savedCurrencies);
+            }
+            if (periodSpinner.getSelectedItemPosition() == 3) {
+                editor.putString(getString(R.string.saved_date_from), dateFromEdit.getText().toString());
+                editor.putString(getString(R.string.saved_date_to), dateToEdit.getText().toString());
+            }
+
+            editor.apply();
+            Log.d(TAG, "SharedPrefs was saved " + periodSpinner.getSelectedItemPosition() + " " + savedCurrencies.toString());
+        }
+    }
+
+    private void callDatePicker(TextView textView) {
+        // получаем текущую дату
+        final Calendar cal = Calendar.getInstance();
+        mYear = cal.get(Calendar.YEAR);
+        mMonth = cal.get(Calendar.MONTH);
+        mDay = cal.get(Calendar.DAY_OF_MONTH);
+
+        // инициализируем диалог выбора даты текущими значениями
+        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+                (view, year, monthOfYear, dayOfMonth) -> {
+                    String editTextDateParam = dayOfMonth + "." + (monthOfYear + 1) + "." + year;
+                    textView.setText(editTextDateParam);
+                }, mYear, mMonth, mDay);
+        datePickerDialog.show();
     }
 }
