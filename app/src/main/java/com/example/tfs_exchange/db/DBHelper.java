@@ -73,19 +73,31 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String GET_HISTORY = "SELECT * FROM " + TABLE_EXCHANGE_NAME;
 
-    private String getExchangeHistory(String currencyFrom, String currencyTo) {
-        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE " + EXCHANGE_BASE + "= '"
-                + currencyFrom + "' AND " + EXCHANGE_SYMBOLS + " = '" + currencyTo + "'";
-    }
-
     private String getExchangeHistory(Set<String> currencies) {
         String SQLQuery = "";
-        for (String currency: currencies)
-        {
+        for (String currency: currencies) {
             SQLQuery += EXCHANGE_BASE + " = '" + currency + "' OR " + EXCHANGE_SYMBOLS + " = '" + currency + "' OR ";
         }
         return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE " + SQLQuery.substring(0, SQLQuery.length() - 3);
     }
+
+    private String getExchangeHistory(String dateFrom, String dateTo) {
+        String SQLQuery = "";
+        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE "
+                + EXCHANGE_DATE + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
+    }
+
+    private String getExchangeHistory(Set<String> currencies, String dateFrom, String dateTo) {
+        String SQLQuery = "";
+        for (String currency: currencies) {
+            SQLQuery += EXCHANGE_BASE + " = '" + currency + "' OR " + EXCHANGE_SYMBOLS + " = '" + currency + "' OR ";
+        }
+        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE "
+                + SQLQuery.substring(0, SQLQuery.length() - 3) + " AND "
+                + EXCHANGE_DATE + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
+    }
+
+
     private String getFilter(String name) {
         return "SELECT * FROM " + TABLE_CURRENCY_NAME + " WHERE " + CURRENCY_BASE + " = '" + name + "'";
     }
@@ -215,6 +227,8 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return exchanges;
     }
+
+
 
 
     //В конструктор передаем контекст, имя базы данных, CursorFactory (не используется, поэтому null), и версию базы данных

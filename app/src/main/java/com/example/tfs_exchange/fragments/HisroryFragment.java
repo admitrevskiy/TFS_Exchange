@@ -99,11 +99,13 @@ public class HisroryFragment extends Fragment implements LoaderManager.LoaderCal
     public Loader<List<Exchange>> onCreateLoader(int id, Bundle args) {
         Loader<List<Exchange>> loader = null;
         HashSet<String> set = new HashSet<>();
-        //set.add("EUR");
-        //set.add("HDK");
         if (id == LOADER_ID) {
-            loader = new AsyncExchangeDBLoader(getContext(), true, currencyFilter);
-            //loader = new AsyncExchangeDBLoader(getContext());
+            if (periodFilter == 0 && (currencyFilter == null || currencyFilter.size() == 0)) {
+                loader = new AsyncExchangeDBLoader(getContext());
+            } else if (periodFilter == 0 && currencyFilter.size()>0) {
+                loader = new AsyncExchangeDBLoader(getContext(), true, currencyFilter);
+            }
+
             Log.d(TAG, "onCreateLoader: " + loader.hashCode());
         }
         return loader;
