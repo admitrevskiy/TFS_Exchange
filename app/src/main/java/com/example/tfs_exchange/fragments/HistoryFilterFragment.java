@@ -301,7 +301,7 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
             }
 
             editor.apply();
-            Log.d(TAG, "SharedPrefs was saved " + periodSpinner.getSelectedItemPosition() + " " + savedCurrencies.toString());
+            Log.d(TAG, "SharedPrefs was saved " + periodSpinner.getSelectedItemPosition() + " " + savedCurrencies.toString() + " " + dateFromEdit.getText().toString() + " " + dateToEdit.getText().toString());
         }
     }
 

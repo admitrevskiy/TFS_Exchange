@@ -184,6 +184,7 @@ public class ExchangeFragment extends Fragment {
         db = dbHelper.getWritableDatabase();
         cv = new ContentValues();
         Date dateNow = new Date();
+        long millis = dateNow.getTime()/1000;
         String[] dateAndTime = dateFormat.format(dateNow).split("\n");
         cv.put("EXCHANGE_BASE", currencyFrom);
         cv.put("EXCHANGE_BASE_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText())));
@@ -192,6 +193,7 @@ public class ExchangeFragment extends Fragment {
         cv.put("EXCHANGE_RATE", rate);
         cv.put("EXCHANGE_DATE", dateAndTime[0]);
         cv.put("EXCHANGE_TIME", dateAndTime[1]);
+        cv.put("EXCHANGE_MILLIS", millis);
         db.insert("exchange_name", null, cv);
         db.close();
     }

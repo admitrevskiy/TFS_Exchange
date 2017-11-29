@@ -16,8 +16,9 @@ public class Exchange {
     private double rate;
     private String date;
     private String time;
+    private long millis;
 
-    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, double rate, String date, String time) {
+    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, double rate, String date, String time, long millis) {
         this.currencyFrom = currencyFrom;
         this.currencyTo = currencyTo;
         this.amountFrom = amountFrom;
@@ -25,15 +26,17 @@ public class Exchange {
         this.rate = rate;
         this.date = date;
         this.time = time;
+        this.millis = millis;
     }
 
-    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, String date, String time) {
+    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, String date, String time, long millis) {
         this.currencyFrom = currencyFrom;
         this.currencyTo = currencyTo;
         this.amountFrom = amountFrom;
         this.amountTo = amountTo;
         this.date = date;
         this.time = time;
+        this.millis = millis;
     }
 
     public String getCurrencyFrom() {

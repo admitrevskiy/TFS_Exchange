@@ -9,6 +9,7 @@ import android.util.Log;
 import com.example.tfs_exchange.model.Exchange;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -27,9 +28,12 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
     private static final String EXCHANGE_RATE = "exchange_rate";
     private static final String EXCHANGE_DATE = "exchange_date";
     private static final String EXCHANGE_TIME = "exchange_time";
-    private boolean isSorted;
-    private String curencyFrom, currencyTo;
+    private static final String EXCHANGE_MILLIS = "exchange_millis";
+    private boolean isSortedDate, isSortedCurrencies;
+    private String curencyFrom, currencyTo, dateFrom, dateTo;
     private Set<String> currencies;
+    private int periodId;
+    private long dateFromMillis, dateToMillis;
 
     private DBHelper dbHelper;
     private Exchange exchange;
@@ -40,21 +44,43 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
     public AsyncExchangeDBLoader(Context context) {
         super(context);
         Log.d(TAG, "create AsyncLoader");
-        isSorted = false;
+        isSortedDate = false;
+        isSortedCurrencies = false;
     }
 
-    public AsyncExchangeDBLoader(Context context, boolean isSorted, Set<String> currencies){
+    public AsyncExchangeDBLoader(Context context, long dateFrom, long dateTo) {
         super(context);
-        this.isSorted = true;
+        this.isSortedDate = true;
+        this.isSortedCurrencies = false;
+        this.dateFromMillis = dateFrom;
+        this.dateToMillis = dateTo;
+        Log.d(TAG, "create AsyncLoader with date");
+    }
+
+    public AsyncExchangeDBLoader(Context context, Set<String> currencies){
+        super(context);
+        this.isSortedDate = false;
+        this.isSortedCurrencies = true;
         this.currencies = currencies;
-        Log.d(TAG, "create sorted AsyncLoader");
+        Log.d(TAG, "create sorted AsyncLoader with currencies");
+    }
+
+    public AsyncExchangeDBLoader(Context context, Set<String> currencies, long dateFromMillis, long dateToMillis){
+        super(context);
+        this.isSortedDate = true;
+        this.isSortedCurrencies = true;
+        this.currencies = currencies;
+        this.dateFromMillis = dateFromMillis;
+        this.dateToMillis = dateToMillis;
+
+        Log.d(TAG, "create sorted AsyncLoader with dates and currencies");
     }
 
     @Override
     public List<Exchange> loadInBackground() {
         exchanges = new ArrayList<Exchange>();
         dbHelper = new DBHelper(getContext());
-        if (!isSorted) {
+        if (!isSortedDate && !isSortedCurrencies) {
             db = dbHelper.getReadableDatabase();
             //Создаем курсор
             Cursor cursor = db.query(TABLE_EXCHANGE_NAME, null, null, null, null, null, null);
@@ -68,6 +94,7 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
                 int rateColId = cursor.getColumnIndex(EXCHANGE_RATE);
                 int dateColId  = cursor.getColumnIndex(EXCHANGE_DATE);
                 int timeColId  = cursor.getColumnIndex(EXCHANGE_TIME);
+                int millisColId = cursor.getColumnIndex(EXCHANGE_MILLIS);
 
                 do {
                     String base = cursor.getString(baseColId);
@@ -77,8 +104,9 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
                     double rate = cursor.getDouble(rateColId);
                     String date = cursor.getString(dateColId);
                     String time = cursor.getString(timeColId);
+                    long millis = cursor.getLong(millisColId);
                     Log.d(TAG, time);
-                    exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date, time));
+                    exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date, time, millis));
 
                 } while (cursor.moveToNext());
 
@@ -86,8 +114,17 @@ public class AsyncExchangeDBLoader extends AsyncTaskLoader<List<Exchange>> {
             Log.d(TAG, exchanges.toString());
             return exchanges;
         }
-        else {
+        else if (isSortedDate && !isSortedCurrencies) {
+            Log.d(TAG, "DBHelper call with date");
+            return dbHelper.getSortedExchangeHistory(dateFromMillis, dateToMillis);
+        }
+        else if (!isSortedDate && isSortedCurrencies) {
+            Log.d(TAG, "DBHelper call with currencies");
             return dbHelper.getSortedExchangeHistory(currencies);
+        }
+        else {
+            Log.d(TAG, "DBHelper call with date and currencies");
+            return dbHelper.getSortedExchangeHistory(currencies, dateFromMillis, dateToMillis);
         }
 
 

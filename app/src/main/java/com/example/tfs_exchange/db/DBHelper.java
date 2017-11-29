@@ -47,6 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String EXCHANGE_RATE = "exchange_rate";
     private static final String EXCHANGE_DATE = "exchange_date";
     private static final String EXCHANGE_TIME = "exchange_time";
+    private static final String EXCHANGE_MILLIS = "exchange_millis";
 
     private static final String TABLE_CURRENCY_NAME = "currency_name";
     private static final String CURRENCY_BASE = "currency_base";
@@ -68,7 +69,8 @@ public class DBHelper extends SQLiteOpenHelper {
             + EXCHANGE_SYMBOLS_AMOUNT + " real, "
             + EXCHANGE_RATE + " real, "
             + EXCHANGE_DATE + " String, "
-            + EXCHANGE_TIME + " String "
+            + EXCHANGE_TIME + " String, "
+            + EXCHANGE_MILLIS + " integer "
             + ");";
 
     private static final String GET_HISTORY = "SELECT * FROM " + TABLE_EXCHANGE_NAME;
@@ -81,20 +83,20 @@ public class DBHelper extends SQLiteOpenHelper {
         return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE " + SQLQuery.substring(0, SQLQuery.length() - 3);
     }
 
-    private String getExchangeHistory(String dateFrom, String dateTo) {
+    private String getExchangeHistory(long dateFrom, long dateTo) {
         String SQLQuery = "";
         return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE "
-                + EXCHANGE_DATE + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
+                + EXCHANGE_MILLIS + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
     }
 
-    private String getExchangeHistory(Set<String> currencies, String dateFrom, String dateTo) {
+    private String getExchangeHistory(Set<String> currencies, long dateFrom, long dateTo) {
         String SQLQuery = "";
         for (String currency: currencies) {
             SQLQuery += EXCHANGE_BASE + " = '" + currency + "' OR " + EXCHANGE_SYMBOLS + " = '" + currency + "' OR ";
         }
-        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE "
-                + SQLQuery.substring(0, SQLQuery.length() - 3) + " AND "
-                + EXCHANGE_DATE + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
+        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE ("
+                + SQLQuery.substring(0, SQLQuery.length() - 4) + ") AND  "
+                + EXCHANGE_MILLIS + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
     }
 
 
@@ -218,8 +220,55 @@ public class DBHelper extends SQLiteOpenHelper {
                     double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
                     String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
                     String time = cursor.getString(cursor.getColumnIndex(EXCHANGE_TIME));
-                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time));
+                    long millis = cursor.getLong(cursor.getColumnIndex(EXCHANGE_MILLIS));
+                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time, millis));
                     Log.d(TAG, currencyFrom + " " + currencyTo + " " + date);
+                } while (cursor.moveToNext());
+            }
+        } catch (SQLException e) {
+            Log.d(TAG, e.getMessage());
+        }
+        return exchanges;
+    }
+
+    public List<Exchange> getSortedExchangeHistory(long dateFrom, long dateTo) {
+        List<Exchange> exchanges = new ArrayList<>();
+        try (SQLiteDatabase db = this.getReadableDatabase();
+             Cursor cursor = db.rawQuery(getExchangeHistory(dateFrom, dateTo), null)) {
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                do {
+                    String currencyFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
+                    String currencyTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
+                    double amountFrom = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT));
+                    double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
+                    String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
+                    String time = cursor.getString(cursor.getColumnIndex(EXCHANGE_TIME));
+                    long millis = cursor.getLong(cursor.getColumnIndex(EXCHANGE_MILLIS));
+                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time, millis));
+                    Log.d(TAG, currencyFrom + " " + currencyTo + " " + date);
+                } while (cursor.moveToNext());
+            }
+        } catch (SQLException e) {
+            Log.d(TAG, e.getMessage());
+        }
+        return exchanges;
+    }
+
+    public List<Exchange> getSortedExchangeHistory(Set<String> currencies, long dateFrom, long dateTo) {
+        List<Exchange> exchanges = new ArrayList<>();
+        try (SQLiteDatabase db = this.getReadableDatabase();
+             Cursor cursor = db.rawQuery(getExchangeHistory(currencies, dateFrom, dateTo), null)) {
+            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                do {
+                    String currencyFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
+                    String currencyTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
+                    double amountFrom = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT));
+                    double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
+                    String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
+                    String time = cursor.getString(cursor.getColumnIndex(EXCHANGE_TIME));
+                    long millis = cursor.getLong(cursor.getColumnIndex(EXCHANGE_MILLIS));
+                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time, millis));
+                    Log.d(TAG, currencyFrom + " " + currencyTo + " " + millis);
                 } while (cursor.moveToNext());
             }
         } catch (SQLException e) {
