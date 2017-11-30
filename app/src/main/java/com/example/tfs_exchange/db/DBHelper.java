@@ -102,6 +102,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 + EXCHANGE_MILLIS + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
     }
 
+    private String getExchangeHistory() {
+        return "SELECT * FROM " + TABLE_EXCHANGE_NAME;
+    }
 
     private String getFilter(String name) {
         return "SELECT * FROM " + TABLE_CURRENCY_NAME + " WHERE " + CURRENCY_BASE + " = '" + name + "'";
@@ -127,11 +130,46 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    public List<Exchange> loadAllHistory() {
+        List<Exchange> exchanges = new ArrayList<>();
+        try (SQLiteDatabase db = this.getReadableDatabase();) {
+            try (Cursor cursor = db.query(TABLE_EXCHANGE_NAME, null, null, null, null, null, null)) {
+                if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+
+                    //Находим индексы колонок
+                    int baseColId = cursor.getColumnIndex(EXCHANGE_BASE);
+                    int symbolsColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS);
+                    int amountFromColId = cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT);
+                    int amountToColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT);
+                    int rateColId = cursor.getColumnIndex(EXCHANGE_RATE);
+                    int dateColId = cursor.getColumnIndex(EXCHANGE_DATE);
+                    int timeColId = cursor.getColumnIndex(EXCHANGE_TIME);
+                    int millisColId = cursor.getColumnIndex(EXCHANGE_MILLIS);
+
+                    do {
+                        String base = cursor.getString(baseColId);
+                        String symbols = cursor.getString(symbolsColId);
+                        double amountFrom = cursor.getDouble(amountFromColId);
+                        double amountTo = cursor.getDouble(amountToColId);
+                        double rate = cursor.getDouble(rateColId);
+                        String date = cursor.getString(dateColId);
+                        String time = cursor.getString(timeColId);
+                        long millis = cursor.getLong(millisColId);
+                        Log.d(TAG, time);
+                        exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date, time, millis));
+
+                    } while (cursor.moveToNext());
+                }
+            }
+        }
+        return exchanges;
+    }
+
     public List<Currency> loadAll() {
         List<Currency> currencies = new ArrayList<>();
         Currency currency;
         try (SQLiteDatabase db = this.getReadableDatabase();) {
-            try (Cursor cursor = db.query("currency_name", null, null, null, null, null, null);) {
+            try (Cursor cursor = db.query(TABLE_CURRENCY_NAME, null, null, null, null, null, null);) {
                 if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                     //Находим индексы колонок
                     int baseColId = cursor.getColumnIndex("currency_base");
