@@ -77,6 +77,7 @@ public class Currency {
     }
 
 
+
     /** переписываем методы equals и hashCode для корректной работы HashSet в AsyncCurrencyDBLoader при загрузке для экрана фильтров **/
     @Override
     public boolean equals(Object o) {

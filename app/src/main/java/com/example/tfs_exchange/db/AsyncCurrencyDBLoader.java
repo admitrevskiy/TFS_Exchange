@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
+import com.example.tfs_exchange.ExchangerApp;
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
 import com.example.tfs_exchange.comparators.LastUsedComparator;
@@ -25,6 +26,7 @@ import java.util.List;
 public class AsyncCurrencyDBLoader extends AsyncTaskLoader<List<Currency>> {
 
 
+    private static AsyncCurrencyDBLoader CurrencyINSTANCE;
     private DBHelper dbHelper;
     private Currency currency;
     private List<Currency> currencies;
@@ -34,6 +36,13 @@ public class AsyncCurrencyDBLoader extends AsyncTaskLoader<List<Currency>> {
     private boolean isFilter;
 
     public static final String TAG = "AsyncCurrencyLoader";
+
+    public static AsyncCurrencyDBLoader getCurrencyInstance() {
+        if (CurrencyINSTANCE == null) {
+            CurrencyINSTANCE = new AsyncCurrencyDBLoader(ExchangerApp.getContext());
+        }
+        return CurrencyINSTANCE;
+    }
 
     public AsyncCurrencyDBLoader(Context context) {
         super(context);
@@ -51,7 +60,7 @@ public class AsyncCurrencyDBLoader extends AsyncTaskLoader<List<Currency>> {
     @Override
     public List<Currency> loadInBackground() {
         currencies = new ArrayList<Currency>();
-        dbHelper = new DBHelper(getContext());
+        dbHelper = DBHelper.getInstance();
         if (isFilter) {
             return dbHelper.getFilteredCurrencies();
         } else {

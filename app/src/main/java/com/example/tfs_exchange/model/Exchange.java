@@ -39,6 +39,18 @@ public class Exchange {
         this.millis = millis;
     }
 
+    @Override
+    public String toString() {
+        return currencyFrom + "  " + currencyTo + " " + amountFrom + " " + amountTo + " " + date + " " + time + " " + millis;
+    }
+    public double getRate() {
+        return rate;
+    }
+
+    public long getMillis() {
+        return millis;
+    }
+
     public String getCurrencyFrom() {
         return currencyFrom;
     }

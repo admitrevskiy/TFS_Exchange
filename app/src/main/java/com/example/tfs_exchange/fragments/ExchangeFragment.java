@@ -25,6 +25,9 @@ import io.reactivex.schedulers.Schedulers;
 import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.R;
+import com.example.tfs_exchange.exchange.ExchangeContract;
+import com.example.tfs_exchange.exchange.ExchangePresenter;
+import com.example.tfs_exchange.model.Exchange;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,7 +39,7 @@ import java.util.Date;
  *
  */
 
-public class ExchangeFragment extends Fragment {
+public class ExchangeFragment extends Fragment implements ExchangeContract.View {
     private static final String TAG = "ExchangeFragment";
     SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy '\n' HH:mm:ss");
 
@@ -46,6 +49,8 @@ public class ExchangeFragment extends Fragment {
     private ContentValues cv;
     private SQLiteDatabase db;
     private DBHelper dbHelper;
+
+    private ExchangeContract.Presenter mPresenter;
 
     private double amountFrom;
     private double amountTo;
@@ -87,9 +92,10 @@ public class ExchangeFragment extends Fragment {
     //Слушатель нажатия на кнопку из ButterKnife
     @OnClick(R.id.exchange_button)
     void onSaveClick() {
-        amountFrom = Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText()));
-        amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
-        setExchangeToDB();
+        mPresenter.sendExchange();
+        //amountFrom = Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText()));
+        //amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
+        //setExchangeToDB();
 //        dbHelper.setExchangeToDB(currencyFrom, currencyTo, amountFrom, amountTo, rate);
         Log.d(TAG, " button clicked");
     }
@@ -106,41 +112,52 @@ public class ExchangeFragment extends Fragment {
         final View exchangeFragmentRootView = inflater.inflate(R.layout.exchange_fragment, container, false);
         ButterKnife.bind(this, exchangeFragmentRootView);
         disactivateRate();
+        mPresenter = new ExchangePresenter(this);
         //Получаем Bundle от вызвавшего фрагмента и достаем из него информацию
-        Bundle incomingBundle = getArguments();
+        //Bundle incomingBundle = getArguments();
+        mPresenter.getCurrenciesAndRate(getArguments());
+        /**
         if (incomingBundle!= null) {
             currencyFrom = incomingBundle.getStringArray("currencies")[0];
             currencyTo = incomingBundle.getStringArray("currencies")[1];
 
-            //Устанавливаем имена валют
-            currencyFromName.setText(currencyFrom);
-            currencyToName.setText(currencyTo);
+            setCurrencies(currencyFrom, currencyTo);
+
+
+
+            mPresenter.subscribeRate(currencyFrom, currencyTo);
 
             //С помощью RxJava подписываемся на курс
-            subscribeRate(currencyFrom, currencyTo);
+            //subscribeRate(currencyFrom, currencyTo);
         }
 
+         **/
         Log.d(TAG, "onCreateView");
         return exchangeFragmentRootView;
     }
 
     //Устанавливаем в поля значение и курса и единицу для базовой валюты
-    private void activateRate (double rate) {
+    @Override
+    public void activateRate (double rate) {
         currencyAmountFromEdit.setText("1.00");
         currencyAmountFromEdit.setEnabled(true);
         currencyAmountToEdit.setText(String.valueOf(rate) + " ");
         currencyAmountToEdit.setEnabled(true);
         exchangeButton.setText("ОБМЕНЯТЬ");
         exchangeButton.setEnabled(true);
+        setRate(rate);
         Log.d(TAG, "rate activated");
     }
 
-    private void disactivateRate() {
+    @Override
+    public void disactivateRate() {
         currencyAmountFromEdit.setEnabled(false);
         currencyAmountToEdit.setEnabled(false);
         exchangeButton.setEnabled(false);
+        exchangeButton.setText("No connection");
     }
 
+    /**
     //Подписка, используем RetroLambda, RxJava, Retrofit настраиваем в gradle
     private void subscribeRate(String currencyFrom, String currencyTo) {
         rateSubscription = new FixerApiHelper()
@@ -163,24 +180,50 @@ public class ExchangeFragment extends Fragment {
                 });
         Log.d(TAG, "Subscribe");
     }
+     **/
 
+    /**
     //Отписка
     private void unsubscribeRate() {
         if (rateSubscription != null) rateSubscription.dispose();
         Log.d(TAG, "unsubscribe from rate");
     }
+     **/
 
     //Отписка происходит в onDetach
     @Override
     public void onDetach() {
         super.onDetach();
-        unsubscribeRate();
+        mPresenter.unsubscribeRate();
         Log.d(TAG, "onDetach()");
     }
 
-    /** перенести в DBHelper **/
+    @Override
+    public void setCurrencies(String currencyFrom, String currencyTo)  {
+        this.currencyFrom = currencyFrom;
+        this.currencyTo = currencyTo;
+        currencyFromName.setText(currencyFrom);
+        currencyToName.setText(currencyTo);
+    }
+
+    @Override
+    public void setRate(double rate) {
+        this.rate = rate;
+    }
+
+    @Override
+    public Exchange getExchange() {
+        Date dateNow = new Date();
+        long millis = dateNow.getTime()/1000;
+        String[] dateAndTime = dateFormat.format(dateNow).split("\n");
+        double amountFrom = Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText()));
+        double amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
+        return new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, rate, dateAndTime[0], dateAndTime[1], millis);
+    }
+
+    /**
     private void setExchangeToDB() {
-        dbHelper = new DBHelper(getContext());
+        dbHelper = DBHelper.getInstance();
         db = dbHelper.getWritableDatabase();
         cv = new ContentValues();
         Date dateNow = new Date();
@@ -197,4 +240,5 @@ public class ExchangeFragment extends Fragment {
         db.insert("exchange_name", null, cv);
         db.close();
     }
+     **/
 }

@@ -5,19 +5,16 @@ package com.example.tfs_exchange.fragments;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
 
 import android.support.annotation.Nullable;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import com.example.tfs_exchange.db.AsyncCurrencyDBLoader;
+import com.example.tfs_exchange.currency_select.CurrencyContract;
+import com.example.tfs_exchange.currency_select.CurrencySelectPresenter;
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.R;
@@ -32,7 +29,6 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -43,7 +39,7 @@ import butterknife.ButterKnife;
  * Заметка от 9.11: анонимные внутренние классы переписать на лямбдах
  */
 
-public class CurrencySelectFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Currency>> {
+public class CurrencySelectFragment extends Fragment implements CurrencyContract.View {
     private static final int LOADER_ID = 1;
 
     private final static String TAG = "CurrencySelectFragment";
@@ -53,6 +49,7 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
     private LongClickedComparator longClickedComp;
     private boolean noItemLongClicked;
     private Currency selectedCurrency;
+    private CurrencyContract.Presenter mPresenter;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -75,16 +72,18 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         Log.d(TAG, " onPause");
     }
 
+    /**
     @Nullable
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        /** Загрузка валют из БД происходит асинхронно **/
+        // Загрузка валют из БД происходит асинхронно
         getLoaderManager().initLoader(LOADER_ID, null, this);
         Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
         loader.forceLoad();
-        /** ------------------------------------------**/
+
         super.onCreate(savedInstanceState);
     }
+     **/
 
     @Nullable
     @Override
@@ -93,18 +92,27 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
 
         ButterKnife.bind(this, firstFragmentRootView);
 
-        dbHelper = new DBHelper(getContext());
+        dbHelper = DBHelper.getInstance();
         faveComp = new FavoriteComparator();
         lastUsedComp = new LastUsedComparator();
         longClickedComp = new LongClickedComparator();
 
         noItemLongClicked = true;
+        mPresenter = new CurrencySelectPresenter(this);
+        mPresenter.getCurrencies();
 
+        //setAdapter(currencies);
+
+        Log.d(TAG, " onCreateView" + this.hashCode());
+        return firstFragmentRootView;
+    }
+
+    @Override
+    public void setAdapter(List<Currency> currencies) {
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                //setFaveToDB(currency);
-                dbHelper.setFaveToDB(currency);
+                mPresenter.setFaveToDb(currency);
                 sortCurrencies();
                 Log.d(TAG, "Currency item " + currency.getName() + " fave changed");
             }
@@ -113,7 +121,9 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void onItemClick(Currency currency) {
                 Log.d("Currency item ", " " + currency.getName() + " short clicked");
-                dbHelper.setTimeToDB(currency);
+                mPresenter.setTime(currency);
+                sortCurrencies();
+                //dbHelper.setTimeToDB(currency);
                 if (noItemLongClicked) {
                     replaceExchangeFragment(currency.getName(), getCurrencyForExchange(currency));
                 }
@@ -130,7 +140,8 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
                     adapter.notifyDataSetChanged();
                     noItemLongClicked = false;
                     selectedCurrency = currency;
-                    dbHelper.setTimeToDB(currency);
+                    mPresenter.setTime(currency);
+                    //dbHelper.setTimeToDB(currency);
                 }
                 else {
                     Log.d("Currency item ", currency.getName() + " long clicked, but another currency is already choosed" );
@@ -143,8 +154,6 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
-        Log.d(TAG, " onCreateView" + this.hashCode());
-        return firstFragmentRootView;
     }
 
     @Override
@@ -153,30 +162,12 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
         dbHelper.close();
     }
 
-
     @Override
-    public Loader<List<Currency>> onCreateLoader(int id, Bundle args) {
-        Loader<List<Currency>> loader = null;
-        if (id == LOADER_ID) {
-            loader = new AsyncCurrencyDBLoader(getContext());
-            Log.d(TAG, "onCreateLoader: " + loader.hashCode());
-        }
-        return loader;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<List<Currency>> loader, List<Currency> data) {
-        for (Currency currency : data) {
-            currencies.add(currency);
-        }
-        Log.d(TAG, "onLoadFinished: " + loader.hashCode());
+    public void setCurrencies(List<Currency> currencies) {
+        this.currencies = currencies;
         sortCurrencies();
     }
 
-    @Override
-    public void onLoaderReset(Loader<List<Currency>> loader) {
-        Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
-    }
 
     //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
     private void sortCurrencies() {
@@ -222,5 +213,31 @@ public class CurrencySelectFragment extends Fragment implements LoaderManager.Lo
             dbHelper.close();
         }
     }
+
+    /**
+    @Override
+    public Loader<List<Currency>> onCreateLoader(int id, Bundle args) {
+        Loader<List<Currency>> loader = null;
+        if (id == LOADER_ID) {
+            loader = new AsyncCurrencyDBLoader(getContext());
+            Log.d(TAG, "onCreateLoader: " + loader.hashCode());
+        }
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<Currency>> loader, List<Currency> data) {
+        for (Currency currency : data) {
+            currencies.add(currency);
+        }
+        Log.d(TAG, "onLoadFinished: " + loader.hashCode());
+        sortCurrencies();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<Currency>> loader) {
+        Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
+    }
+    **/
 
 }

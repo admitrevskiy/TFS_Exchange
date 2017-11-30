@@ -21,6 +21,7 @@ import android.util.Log;
 
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
+import com.example.tfs_exchange.fragments.AnalyticsFragment;
 import com.example.tfs_exchange.fragments.CurrencySelectFragment;
 import com.example.tfs_exchange.fragments.ExchangeFragment;
 import com.example.tfs_exchange.fragments.HisroryFragment;
@@ -54,6 +55,7 @@ public class MainActivity extends FragmentActivity {
         //CurrencySelectFragment fragment = new CurrencySelectFragment();
         HisroryFragment fragment = new HisroryFragment();
         //HistoryFilterFragment fragment = new HistoryFilterFragment();
+        //AnalyticsFragment fragment = new AnalyticsFragment();
         addFragment(fragment);
 
     }

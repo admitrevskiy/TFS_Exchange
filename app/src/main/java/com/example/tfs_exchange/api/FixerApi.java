@@ -4,6 +4,7 @@ import com.example.tfs_exchange.api.ApiResponse;
 
 import io.reactivex.Single;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /**
@@ -12,10 +13,18 @@ import retrofit2.http.Query;
 
 public interface FixerApi {
 
+
     //Запрос с latest; Single от RxJava
     @GET("latest")
     Single<ApiResponse> latest(
-            @Query("base") String from,
-            @Query("symbols") String to
+            @Query("base") String currencyFrom,
+            @Query("symbols") String currencyTo
     );
+
+    @GET("{date}")
+    Single<ApiResponse> getRateByDate(
+            @Path("date") String date,
+            @Query("base") String currencyFrom,
+            @Query("symbols") String currencyTo);
+
 }
