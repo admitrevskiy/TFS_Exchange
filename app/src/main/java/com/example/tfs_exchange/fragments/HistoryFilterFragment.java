@@ -26,10 +26,16 @@ import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.db.AsyncCurrencyDBLoader;
 import com.example.tfs_exchange.db.DBHelper;
+import com.example.tfs_exchange.history_filter.HistoryFilterContract;
+import com.example.tfs_exchange.history_filter.HistoryFilterPresenter;
 import com.example.tfs_exchange.model.Currency;
+import com.example.tfs_exchange.model.Settings;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,13 +49,15 @@ import butterknife.OnClick;
  * Created by pusya on 20.11.17.
  */
 
-public class HistoryFilterFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Currency>>{
+public class HistoryFilterFragment extends Fragment implements HistoryFilterContract.View {
 
     private static final String TAG = "HistoryFilterFragment";
 
+    SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+
     private final String[] periods = {"все время", "неделя", "месяц", "выбрать даты"};
     private int period;
-    private final int LOADER_ID = 3;
+
     private DBHelper dbHelper;
     private ContentValues cv;
     SQLiteDatabase db;
@@ -60,6 +68,7 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
     private Set<String> savedCurrencies;
     private int mYear, mMonth, mDay;
     private ToastHelper toastHelper;
+    private HistoryFilterContract.Presenter mPresenter;
 
     @BindView(R.id.filter_recycler_view)
     RecyclerView recyclerView;
@@ -100,11 +109,6 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
     @Nullable
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        /** Загрузка валют из БД происходит асинхронно **/
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-        Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
-        loader.forceLoad();
-        /** ------------------------------------------**/
         super.onCreate(savedInstanceState);
     }
 
@@ -116,11 +120,37 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         disableDate();
         Log.d(TAG, currencies.toString());
 
+        mPresenter = new HistoryFilterPresenter(this);
+
         toastHelper = new ToastHelper();
         settings = this.getActivity().getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
 
+        mPresenter.getCurrencies();
+        //setAdapter(currencies);
+        setSpinner();
 
-        //RecyclerView
+
+        saveFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.getAndSaveSettings();
+                /**
+                getFilterCurrencies();
+                if (filterCurrencies.size() > 0)
+                {
+                    saveFilter();
+                    Log.d(TAG, "fab is clicked \n" + getFilterCurrencies().toString());
+                }
+                **/
+            }
+        });
+
+        Log.d(TAG, " onCreateView" + this.hashCode());
+        return historyFilterFragmentRootView;
+    }
+
+    @Override
+    public void setAdapter(List<Currency> currencies) {
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
@@ -133,7 +163,14 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
+    }
 
+    @Override
+    public void setCurrencies(List<Currency> currencies) {
+        this.currencies = currencies;
+    }
+
+    private void setSpinner() {
         //Spinner для выбора периода
         ArrayAdapter<String> selectPeriodAdaper = new ArrayAdapter<String>(getContext(), R.layout.spinner_item, periods);
         selectPeriodAdaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -190,48 +227,9 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
         };
         periodSpinner.setOnItemSelectedListener(periodSelectedListener);
 
-
-        saveFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getFilterCurrencies();
-                if (filterCurrencies.size() > 0)
-                {
-                    saveFilter();
-                    Log.d(TAG, "fab is clicked \n" + getFilterCurrencies().toString());
-                }
-
-            }
-        });
-
-        Log.d(TAG, " onCreateView" + this.hashCode());
-        return historyFilterFragmentRootView;
     }
 
-    @Override
-    public Loader<List<Currency>> onCreateLoader(int id, Bundle args) {
-        Loader<List<Currency>> loader = null;
-        if (id == LOADER_ID) {
-            loader = new AsyncCurrencyDBLoader(getContext(), true);
-            Log.d(TAG, "onCreateLoader: " + loader.hashCode());
-        }
-        return loader;
-    }
 
-    @Override
-    public void onLoadFinished(Loader<List<Currency>> loader, List<Currency> data) {
-        Log.d(TAG, data.toString());
-        for (Currency currency : data) {
-            currencies.add(currency);
-        }
-        Log.d(TAG, "onLoadFinished: " + loader.hashCode());
-        //sortCurrencies();
-    }
-
-    @Override
-    public void onLoaderReset(Loader<List<Currency>> loader) {
-        Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
-    }
 
     //Записываем в БД изменение избранности валюты
     private void setFaveToDB(Currency currency) {
@@ -299,6 +297,78 @@ public class HistoryFilterFragment extends Fragment implements LoaderManager.Loa
 
             editor.apply();
             Log.d(TAG, "SharedPrefs was saved " + periodSpinner.getSelectedItemPosition() + " " + savedCurrencies.toString() + " " + dateFromEdit.getText().toString() + " " + dateToEdit.getText().toString());
+        }
+    }
+
+    @Override
+    public Settings getSettings(){
+
+        Settings settings;
+        int periodId = periodSpinner.getSelectedItemPosition();
+        Set<String> savedCurrencies = getFilterCurrencies();
+        Date now = new Date (System.currentTimeMillis());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);
+
+        if (savedCurrencies.size() > 0) {
+            if (periodId == 0) {
+                 settings = new Settings(0, savedCurrencies);
+                Log.d(TAG, "saved: " + settings.toString());
+                 return settings;
+            } else if (periodId == 1) {
+                calendar.add(Calendar.DATE, -7);
+                settings =  new Settings(1, savedCurrencies, System.currentTimeMillis(), calendar.getTimeInMillis());
+                Log.d(TAG, "saved: " + settings.toString());
+                return settings;
+            } else if (periodId == 2) {
+                calendar.add(Calendar.MONTH, -1);
+                settings = new Settings(2, savedCurrencies, System.currentTimeMillis(), calendar.getTimeInMillis());
+                Log.d(TAG, "saved: " + settings.toString());
+                return settings;
+
+            } else {
+                try {
+                    Date dateFrom = dateFormat.parse(dateFromEdit.getText().toString());
+                    Date dateTo = dateFormat.parse(dateToEdit.getText().toString());
+                    long dateFromMillis = dateFrom.getTime()/1000;
+                    long dateToMillis = dateTo.getTime()/1000;
+                    settings =  new Settings(3, savedCurrencies, dateFromMillis, dateToMillis);
+                    Log.d(TAG, "saved: " + settings.toString());
+                    return settings;
+                } catch (ParseException e) {
+                    Log.d(TAG, "ParseException" + e.getMessage());
+                    return null;
+                }
+            }
+        } else {
+                if (periodId == 0) {
+                    settings =  new Settings(0);
+                    Log.d(TAG, "saved: " + settings.toString());
+                    return settings;
+                } else if (periodId == 1) {
+                    calendar.add(Calendar.DATE, -7);
+                    settings =  new Settings(1, System.currentTimeMillis(), calendar.getTimeInMillis());
+                    Log.d(TAG, "saved: " + settings.toString());
+                    return settings;
+                } else if (periodId == 2) {
+                    calendar.add(Calendar.MONTH, -1);
+                    settings =  new Settings(2, System.currentTimeMillis(), calendar.getTimeInMillis());
+                    Log.d(TAG, "saved: " + settings.toString());
+                    return settings;
+                } else {
+                    try {
+                        Date dateFrom = dateFormat.parse(dateFromEdit.getText().toString());
+                        Date dateTo = dateFormat.parse(dateToEdit.getText().toString());
+                        long dateFromMillis = dateFrom.getTime()/1000;
+                        long dateToMillis = dateTo.getTime()/1000;
+                        settings =  new Settings(3, dateFromMillis, dateToMillis);
+                        Log.d(TAG, "saved: " + settings.toString());
+                        return settings;
+                    } catch (ParseException e) {
+                        Log.d(TAG, "ParseException" + e.getMessage());
+                        return null;
+                    }
+                }
         }
     }
 

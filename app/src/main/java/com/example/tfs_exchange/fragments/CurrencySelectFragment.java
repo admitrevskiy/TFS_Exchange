@@ -40,7 +40,6 @@ import butterknife.ButterKnife;
  */
 
 public class CurrencySelectFragment extends Fragment implements CurrencyContract.View {
-    private static final int LOADER_ID = 1;
 
     private final static String TAG = "CurrencySelectFragment";
     private DBHelper dbHelper;
@@ -57,7 +56,6 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     private CurrencyRecyclerListAdapter adapter;
 
     private List<Currency> currencies = new ArrayList<Currency>();
-    //private final List<Currency> faveCurrencies = new ArrayList<Currency>();
 
     @Nullable
     @Override
@@ -71,19 +69,6 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         super.onPause();
         Log.d(TAG, " onPause");
     }
-
-    /**
-    @Nullable
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        // Загрузка валют из БД происходит асинхронно
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-        Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
-        loader.forceLoad();
-
-        super.onCreate(savedInstanceState);
-    }
-     **/
 
     @Nullable
     @Override
@@ -213,31 +198,4 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
             dbHelper.close();
         }
     }
-
-    /**
-    @Override
-    public Loader<List<Currency>> onCreateLoader(int id, Bundle args) {
-        Loader<List<Currency>> loader = null;
-        if (id == LOADER_ID) {
-            loader = new AsyncCurrencyDBLoader(getContext());
-            Log.d(TAG, "onCreateLoader: " + loader.hashCode());
-        }
-        return loader;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<List<Currency>> loader, List<Currency> data) {
-        for (Currency currency : data) {
-            currencies.add(currency);
-        }
-        Log.d(TAG, "onLoadFinished: " + loader.hashCode());
-        sortCurrencies();
-    }
-
-    @Override
-    public void onLoaderReset(Loader<List<Currency>> loader) {
-        Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
-    }
-    **/
-
 }

@@ -46,14 +46,8 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     private String currencyFrom;
     private String currencyTo;
 
-    private ContentValues cv;
-    private SQLiteDatabase db;
-    private DBHelper dbHelper;
-
     private ExchangeContract.Presenter mPresenter;
 
-    private double amountFrom;
-    private double amountTo;
     private double rate;
 
     private Disposable rateSubscription;
@@ -93,10 +87,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     @OnClick(R.id.exchange_button)
     void onSaveClick() {
         mPresenter.sendExchange();
-        //amountFrom = Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText()));
-        //amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
-        //setExchangeToDB();
-//        dbHelper.setExchangeToDB(currencyFrom, currencyTo, amountFrom, amountTo, rate);
         Log.d(TAG, " button clicked");
     }
 
@@ -116,22 +106,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         //Получаем Bundle от вызвавшего фрагмента и достаем из него информацию
         //Bundle incomingBundle = getArguments();
         mPresenter.getCurrenciesAndRate(getArguments());
-        /**
-        if (incomingBundle!= null) {
-            currencyFrom = incomingBundle.getStringArray("currencies")[0];
-            currencyTo = incomingBundle.getStringArray("currencies")[1];
 
-            setCurrencies(currencyFrom, currencyTo);
-
-
-
-            mPresenter.subscribeRate(currencyFrom, currencyTo);
-
-            //С помощью RxJava подписываемся на курс
-            //subscribeRate(currencyFrom, currencyTo);
-        }
-
-         **/
         Log.d(TAG, "onCreateView");
         return exchangeFragmentRootView;
     }
@@ -156,39 +131,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         exchangeButton.setEnabled(false);
         exchangeButton.setText("No connection");
     }
-
-    /**
-    //Подписка, используем RetroLambda, RxJava, Retrofit настраиваем в gradle
-    private void subscribeRate(String currencyFrom, String currencyTo) {
-        rateSubscription = new FixerApiHelper()
-                .createApi()
-                .latest(currencyFrom, currencyTo)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(apiResponse -> {
-                    rate = apiResponse.getRates().getRate();
-                    if (rate != 0) {
-                        activateRate(rate);
-
-                    } else {
-                        Log.d(TAG, " some problems with loading rates");
-                    }
-
-                }, throwable -> {
-                    Log.d(TAG, " connection problems");
-                    exchangeButton.setText("No connection");
-                });
-        Log.d(TAG, "Subscribe");
-    }
-     **/
-
-    /**
-    //Отписка
-    private void unsubscribeRate() {
-        if (rateSubscription != null) rateSubscription.dispose();
-        Log.d(TAG, "unsubscribe from rate");
-    }
-     **/
 
     //Отписка происходит в onDetach
     @Override
@@ -220,25 +162,4 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         double amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
         return new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, rate, dateAndTime[0], dateAndTime[1], millis);
     }
-
-    /**
-    private void setExchangeToDB() {
-        dbHelper = DBHelper.getInstance();
-        db = dbHelper.getWritableDatabase();
-        cv = new ContentValues();
-        Date dateNow = new Date();
-        long millis = dateNow.getTime()/1000;
-        String[] dateAndTime = dateFormat.format(dateNow).split("\n");
-        cv.put("EXCHANGE_BASE", currencyFrom);
-        cv.put("EXCHANGE_BASE_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText())));
-        cv.put("EXCHANGE_SYMBOLS", currencyTo);
-        cv.put("EXCHANGE_SYMBOLS_AMOUNT", Double.parseDouble(String.valueOf(currencyAmountToEdit.getText())));
-        cv.put("EXCHANGE_RATE", rate);
-        cv.put("EXCHANGE_DATE", dateAndTime[0]);
-        cv.put("EXCHANGE_TIME", dateAndTime[1]);
-        cv.put("EXCHANGE_MILLIS", millis);
-        db.insert("exchange_name", null, cv);
-        db.close();
-    }
-     **/
 }

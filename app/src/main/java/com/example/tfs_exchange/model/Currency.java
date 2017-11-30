@@ -97,7 +97,7 @@ public class Currency {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash +=  (int)((char)this.getName().charAt(1));
+        //hash +=  (int)((char)this.getName().charAt(0));
         return hash;
     }
 }
