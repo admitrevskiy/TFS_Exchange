@@ -317,12 +317,12 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
                  return settings;
             } else if (periodId == 1) {
                 calendar.add(Calendar.DATE, -7);
-                settings =  new Settings(1, savedCurrencies, System.currentTimeMillis(), calendar.getTimeInMillis());
+                settings =  new Settings(1, savedCurrencies, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
                 Log.d(TAG, "saved: " + settings.toString());
                 return settings;
             } else if (periodId == 2) {
                 calendar.add(Calendar.MONTH, -1);
-                settings = new Settings(2, savedCurrencies, System.currentTimeMillis(), calendar.getTimeInMillis());
+                settings = new Settings(2, savedCurrencies, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
                 Log.d(TAG, "saved: " + settings.toString());
                 return settings;
 
@@ -347,12 +347,12 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
                     return settings;
                 } else if (periodId == 1) {
                     calendar.add(Calendar.DATE, -7);
-                    settings =  new Settings(1, System.currentTimeMillis(), calendar.getTimeInMillis());
+                    settings =  new Settings(1, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
                     Log.d(TAG, "saved: " + settings.toString());
                     return settings;
                 } else if (periodId == 2) {
                     calendar.add(Calendar.MONTH, -1);
-                    settings =  new Settings(2, System.currentTimeMillis(), calendar.getTimeInMillis());
+                    settings =  new Settings(2, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
                     Log.d(TAG, "saved: " + settings.toString());
                     return settings;
                 } else {
