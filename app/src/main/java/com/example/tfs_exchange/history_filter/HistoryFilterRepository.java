@@ -59,8 +59,8 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
         if (settings.getDateFrom() != 0 && settings.getDateTo() != 0) {
             long dateFrom = settings.getDateFrom();
             long dateTo = settings.getDateTo();
-            editor.putLong(resources.getString(R.string.date_from), dateFrom);
-            editor.putLong(resources.getString(R.string.date_to), dateTo);
+            editor.putLong(resources.getString(R.string.saved_date_from), dateFrom);
+            editor.putLong(resources.getString(R.string.saved_date_to), dateTo);
             Log.d(TAG, "saved prefs: date_from " + dateFrom + " date_to " + dateTo);
         }
         editor.apply();

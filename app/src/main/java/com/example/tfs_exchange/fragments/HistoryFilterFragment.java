@@ -55,7 +55,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
-    private final String[] periods = {"все время", "неделя", "месяц", "выбрать даты"};
+    private final String[] periods = {"все время", "неделя", "месяц", "выбрать"};
     private int period;
 
     private DBHelper dbHelper;
@@ -213,7 +213,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
                         Log.d(TAG, "period " + period);
                         disableDate();
                         break;
-                    case "выбрать даты":
+                    case "выбрать":
                         period = 3;
                         Log.d(TAG, "period " + period);
                         enableDate();

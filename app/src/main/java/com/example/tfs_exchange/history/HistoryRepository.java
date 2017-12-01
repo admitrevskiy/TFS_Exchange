@@ -48,12 +48,12 @@ public class HistoryRepository implements HistoryContract.Repository {
         }
         if (sharedPrefs.contains(resources.getString((R.string.saved_date_from)))) {
             //dateFromFilter = sharedPrefs.getString(resources.getString(R.string.saved_date_from), "");
-            dateFromMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_from), 0)/1000;
+            dateFromMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_from), 0);
             Log.d(TAG, "DateFrom: " + dateFromFilter);
         }
         if (sharedPrefs.contains(resources.getString((R.string.saved_date_to)))) {
             //dateToFilter = sharedPrefs.getString(resources.getString(R.string.saved_date_to), "");
-            dateToMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_to), 0)/1000;
+            dateToMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_to), 0);
             Log.d(TAG, "DateTo: " + dateToFilter);
         }
 
@@ -81,6 +81,7 @@ public class HistoryRepository implements HistoryContract.Repository {
         } else if (periodFilter == 3) {
             Log.d(TAG, dateMessage + "custom");
             if (currencyFilter == null || currencyFilter.size() == 0 && (dateFromFilter != null && dateToFilter != null)) {
+                Log.d(TAG, "dates:  " + dateFromMillis + " " + dateToMillis);
                 return Observable
                         .just(dbHelper.getSortedExchangeHistory(dateFromMillis, dateToMillis))
                         .subscribeOn(Schedulers.io())

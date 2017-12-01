@@ -16,6 +16,8 @@ import android.widget.EditText;
 
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
+import com.example.tfs_exchange.analytics.AnalyticsContract;
+import com.example.tfs_exchange.analytics.AnalyticsPresenter;
 import com.example.tfs_exchange.api.FixerApi;
 import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
@@ -47,7 +49,7 @@ import io.reactivex.disposables.Disposable;
  * Created by pusya on 29.11.17.
  */
 
-public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<Currency>> {
+public class AnalyticsFragment extends Fragment implements AnalyticsContract.View {
 
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -59,6 +61,8 @@ public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderC
 
     private Currency selectedCurrency;
     private CurrencyRecyclerListAdapter adapter;
+
+    private AnalyticsContract.Presenter mPresenter;
 
     private FixerApi api;
     private Disposable rateSubscription;
@@ -76,11 +80,6 @@ public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderC
     @Nullable
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        /** Загрузка валют из БД происходит асинхронно **/
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-        Loader<Object> loader = getLoaderManager().getLoader(LOADER_ID);
-        loader.forceLoad();
-        /** ------------------------------------------**/
         super.onCreate(savedInstanceState);
     }
 
@@ -92,6 +91,24 @@ public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderC
         lastUsedComp = new LastUsedComparator();
         ButterKnife.bind(this, analyticsFragmentRootView);
         api = new FixerApiHelper().createApi();
+       mPresenter = new AnalyticsPresenter(this);
+       mPresenter.getCurrencies();
+        mPresenter.getRates();
+
+        //subscribeRates(days, "RUB");
+
+//        Log.d(TAG, String.valueOf(currencies.get(0).isSelected()));
+        return analyticsFragmentRootView;
+
+    }
+
+    private void setCurrencies(List<Currency> currencies) {
+        this.currencies = currencies;
+    }
+
+    @Override
+    public void setAdapter(List<Currency> currencies) {
+        setCurrencies(currencies);
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
@@ -107,17 +124,6 @@ public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderC
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
-
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
-                new DataPoint(0, 100),
-                new DataPoint(1, 105),
-                new DataPoint(2, 97)
-        });
-        subscribeRates(days, "RUB");
-
-//        Log.d(TAG, String.valueOf(currencies.get(0).isSelected()));
-        return analyticsFragmentRootView;
-
     }
 
     private void setFavorite(Currency currency) {
@@ -158,7 +164,8 @@ public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderC
 //        Log.d(TAG, String.valueOf(currencies.get(0).isSelected()));
     }
 
-    void plotGraph(ArrayList<Float> list) {
+    @Override
+    public void plotGraph(ArrayList<Float> list) {
         DataPoint[] dataPoints = new DataPoint[list.size()];
         String[] dates  = new String[days];
 
@@ -173,39 +180,7 @@ public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderC
         }
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
 
-
-        // set date label formatter
-        //graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getActivity()));
-        //graph.getGridLabelRenderer().setNumHorizontalLabels(3); // only 4 because of the space
-        //graph.getViewport().setMinX(1);
-        //graph.getViewport().setMaxX(list.size());
-        //graph.getViewport().setMinY(list.get(0));
-        //graph.getViewport().setMaxY(list.get(list.size()-1));
-
         graph.addSeries(series);
-
-// set manual x bounds to have nice steps
-
-
-        /**
-        graph.getViewport().setMinX(d1.getTime());
-        graph.getViewport().setMaxX(d3.getTime());
-         **/
-        //graph.getViewport().setXAxisBoundsManual(true);
-
-// as we use dates as labels, the human rounding to nice readable numbers
-// is not necessary
-        //graph.getGridLabelRenderer().setHumanRounding(false);
-    }
-
-    @Override
-    public Loader<List<Currency>> onCreateLoader(int id, Bundle args) {
-        Loader<List<Currency>> loader = null;
-        if (id == LOADER_ID) {
-            loader = new AsyncCurrencyDBLoader(getContext());
-            Log.d(TAG, "onCreateLoader: " + loader.hashCode());
-        }
-        return loader;
     }
 
     private void subscribeRates(int days, String currencyName) {
@@ -224,27 +199,4 @@ public class AnalyticsFragment extends Fragment implements LoaderManager.LoaderC
                 });
     }
 
-    @Override
-    public void onLoadFinished(Loader<List<Currency>> loader, List<Currency> data) {
-        for (Currency currency : data) {
-            currency.setFilter(false);
-            currencies.add(currency);
-        }
-        currencies.get(0).setFilter(true);
-        selectedCurrency = currencies.get(0);
-        Log.d(TAG, "onLoadFinished: " + loader.hashCode());
-        sortCurrencies();
-    }
-
-    @Override
-    public void onLoaderReset(Loader<List<Currency>> loader) {
-        Log.d(TAG, "onLoaderReset for AsyncLoader " + loader.hashCode());
-    }
-
-    private void sortCurrencies() {
-        Collections.sort(currencies, lastUsedComp);
-        Collections.sort(currencies, faveComp);
-        adapter.notifyDataSetChanged();
-        Log.d(TAG, " sortCurrencies");
-    }
 }

@@ -31,7 +31,7 @@ public class CurrencyRepository implements CurrencyContract.Repository {
 
     private FavoriteComparator faveComp = new FavoriteComparator();
     private LastUsedComparator lastUsedComp = new LastUsedComparator();
-    private LongClickedComparator longClickedComp = new LongClickedComparator();
+    //private LongClickedComparator longClickedComp = new LongClickedComparator();
 
 
     @Override
