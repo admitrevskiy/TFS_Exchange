@@ -16,12 +16,14 @@ import io.reactivex.Single;
 public interface AnalyticsContract {
     interface Presenter {
         void getCurrencies();
-        void getRates();
+        void getRates(int days, String currencyName);
+
     }
 
     interface View {
         void setAdapter(List<Currency> currencies);
         void plotGraph(ArrayList<Float> list);
+        void refreshGraph();
 
     }
 

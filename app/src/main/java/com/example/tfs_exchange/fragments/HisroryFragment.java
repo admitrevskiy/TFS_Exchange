@@ -1,12 +1,8 @@
 package com.example.tfs_exchange.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,20 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.tfs_exchange.db.AsyncExchangeDBLoader;
 import com.example.tfs_exchange.history.HistoryContract;
 import com.example.tfs_exchange.history.HistoryPresenter;
 import com.example.tfs_exchange.model.Exchange;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.HistoryRecyclerListAdapter;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,7 +34,6 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
     private HistoryContract.Presenter mPresenter;
     private Unbinder unbinder;
 
-    private List<Exchange> exchanges = new ArrayList<Exchange>();
     private HistoryRecyclerListAdapter adapter;
 
     @BindView(R.id.history_recycler_view)
@@ -55,7 +43,6 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
     @Override
     public void onPause() {
         super.onPause();
-        exchanges = new ArrayList<>();
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {

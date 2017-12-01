@@ -1,7 +1,5 @@
 package com.example.tfs_exchange.fragments;
 
-
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -16,7 +14,6 @@ import android.util.Log;
 import com.example.tfs_exchange.currency_select.CurrencyContract;
 import com.example.tfs_exchange.currency_select.CurrencySelectPresenter;
 import com.example.tfs_exchange.model.Currency;
-import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
@@ -42,7 +39,6 @@ import butterknife.ButterKnife;
 public class CurrencySelectFragment extends Fragment implements CurrencyContract.View {
 
     private final static String TAG = "CurrencySelectFragment";
-    private DBHelper dbHelper;
     private FavoriteComparator faveComp;
     private LastUsedComparator lastUsedComp;
     private LongClickedComparator longClickedComp;
@@ -77,7 +73,6 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
 
         ButterKnife.bind(this, firstFragmentRootView);
 
-        dbHelper = DBHelper.getInstance();
         faveComp = new FavoriteComparator();
         lastUsedComp = new LastUsedComparator();
         longClickedComp = new LongClickedComparator();
@@ -85,8 +80,6 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         noItemLongClicked = true;
         mPresenter = new CurrencySelectPresenter(this);
         mPresenter.getCurrencies();
-
-        //setAdapter(currencies);
 
         Log.d(TAG, " onCreateView" + this.hashCode());
         return firstFragmentRootView;
@@ -144,7 +137,6 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     @Override
     public void onStop() {
         super.onStop();
-        dbHelper.close();
     }
 
     @Override
@@ -194,8 +186,5 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     @Override
     public void onDetach() {
         super.onDetach();
-        if (dbHelper != null) {
-            dbHelper.close();
-        }
     }
 }

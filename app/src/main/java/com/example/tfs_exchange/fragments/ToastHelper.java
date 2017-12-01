@@ -1,6 +1,5 @@
 package com.example.tfs_exchange.fragments;
 
-import android.app.Activity;
 import android.widget.Toast;
 
 import com.example.tfs_exchange.ExchangerApp;
@@ -10,7 +9,7 @@ import com.example.tfs_exchange.ExchangerApp;
  */
 
 public class ToastHelper {
-    public static void showToast(Activity activity, String text) {
+    public static void showToast(String text) {
         Toast toast = Toast.makeText(ExchangerApp.getContext(), text, Toast.LENGTH_LONG);
         toast.show();
     }

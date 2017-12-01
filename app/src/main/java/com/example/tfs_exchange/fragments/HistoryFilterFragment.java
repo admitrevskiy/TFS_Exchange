@@ -8,8 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,7 +22,6 @@ import android.widget.TextView;
 
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
-import com.example.tfs_exchange.db.AsyncCurrencyDBLoader;
 import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.history_filter.HistoryFilterContract;
 import com.example.tfs_exchange.history_filter.HistoryFilterPresenter;

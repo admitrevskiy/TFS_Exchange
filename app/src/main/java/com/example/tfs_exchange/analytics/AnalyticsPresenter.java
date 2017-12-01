@@ -35,8 +35,8 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     }
 
     @Override
-    public void getRates() {
-        Disposable ratesSubscription = mRepository.loadRates(5, "RUB")
+    public void getRates(int days, String currencyName) {
+        Disposable ratesSubscription = mRepository.loadRates(days, currencyName)
                 .subscribe(this::showRates, throwable -> {
                     Log.d(TAG, "problems, bro");
                 });
@@ -47,6 +47,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     }
 
     private void showRates(ArrayList<Float> list) {
+        mView.refreshGraph();
         mView.plotGraph(list);
     }
 }

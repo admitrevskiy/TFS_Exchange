@@ -1,7 +1,5 @@
 package com.example.tfs_exchange.fragments;
 
-import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,12 +16,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-
-import com.example.tfs_exchange.db.DBHelper;
-import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.exchange.ExchangeContract;
 import com.example.tfs_exchange.exchange.ExchangePresenter;
@@ -49,8 +41,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     private ExchangeContract.Presenter mPresenter;
 
     private double rate;
-
-    private Disposable rateSubscription;
 
     @BindView(R.id.currency_from_name)
     TextView currencyFromName;
@@ -103,8 +93,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         ButterKnife.bind(this, exchangeFragmentRootView);
         disactivateRate();
         mPresenter = new ExchangePresenter(this);
-        //Получаем Bundle от вызвавшего фрагмента и достаем из него информацию
-        //Bundle incomingBundle = getArguments();
         mPresenter.getCurrenciesAndRate(getArguments());
 
         Log.d(TAG, "onCreateView");
