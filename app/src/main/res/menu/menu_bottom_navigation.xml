@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/action_exchange"
+        android:id="@+id/exchange"
         android:icon="@drawable/exchange"
         android:title="ОБМЕН"/>
     <item
-        android:id="@+id/action_history"
+        android:id="@+id/history"
         android:icon="@drawable/history"
         android:title="ИСТОРИЯ" />
     <item
-        android:id="@+id/action_analytics"
+        android:id="@+id/analytics"
         android:icon="@drawable/analytics"
         android:title="АНАЛИТИКА" />
 </menu>

@@ -45,6 +45,7 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     private boolean noItemLongClicked;
     private Currency selectedCurrency;
     private CurrencyContract.Presenter mPresenter;
+    private FragmentManager fragmentManager;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -61,7 +62,8 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         selectedCurrency = null;
         currencies = null;
         currencies = new ArrayList<>();
-
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(TAG);
         super.onPause();
         Log.d(TAG, " onPause");
     }
@@ -76,6 +78,8 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         faveComp = new FavoriteComparator();
         lastUsedComp = new LastUsedComparator();
         longClickedComp = new LongClickedComparator();
+
+        fragmentManager = getFragmentManager();
 
         noItemLongClicked = true;
         mPresenter = new CurrencySelectPresenter(this);
@@ -187,4 +191,5 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     public void onDetach() {
         super.onDetach();
     }
+
 }

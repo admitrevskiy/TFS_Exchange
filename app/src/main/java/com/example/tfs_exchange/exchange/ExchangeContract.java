@@ -11,10 +11,14 @@ import com.example.tfs_exchange.model.Exchange;
 public interface ExchangeContract {
     interface View {
         void activateRate(double rate);
+        void activateRate(double rate, double amountFrom);
         void disactivateRate();
         void setCurrencies(String currencyFrom, String currencyTo);
         void setRate(double rate);
         Exchange getExchange();
+        void showDialog(String message);
+        String getAmountFrom();
+        String getAmountTo();
     }
 
     interface Presenter {

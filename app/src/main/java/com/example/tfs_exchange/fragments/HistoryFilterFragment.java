@@ -82,10 +82,10 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
     @BindView(R.id.save_filter)
     android.support.design.widget.FloatingActionButton saveFilter;
 
-    @OnClick (R.id.save_filter)
-    public void setSettings() {
-        saveFilter();
-    }
+    //@OnClick (R.id.save_filter)
+    //public void setSettings() {
+        //saveFilter();
+    //}
 
 
     private void disableDate() {
@@ -131,6 +131,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
             @Override
             public void onClick(View v) {
                 mPresenter.getAndSaveSettings();
+                getFragmentManager().popBackStack();
                 /**
                 getFilterCurrencies();
                 if (filterCurrencies.size() > 0)
@@ -275,6 +276,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
         return savedCurrencies;
     }
 
+    /**
     protected void saveFilter() {
         if (periodSpinner.getSelectedItemPosition() == 3 && (dateFromEdit.getText().equals(getString(R.string.date_from)) || dateToEdit.getText().equals(getString(R.string.date_to)))) {
             toastHelper.showToast(getActivity(), getString(R.string.insert_date_message));
@@ -295,7 +297,9 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
             editor.apply();
             Log.d(TAG, "SharedPrefs was saved " + periodSpinner.getSelectedItemPosition() + " " + savedCurrencies.toString() + " " + dateFromEdit.getText().toString() + " " + dateToEdit.getText().toString());
         }
+
     }
+     **/
 
     @Override
     public Settings getSettings(){
@@ -314,12 +318,12 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
                  return settings;
             } else if (periodId == 1) {
                 calendar.add(Calendar.DATE, -7);
-                settings =  new Settings(1, savedCurrencies, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
+                settings =  new Settings(1, savedCurrencies, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
                 Log.d(TAG, "saved: " + settings.toString());
                 return settings;
             } else if (periodId == 2) {
                 calendar.add(Calendar.MONTH, -1);
-                settings = new Settings(2, savedCurrencies, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
+                settings = new Settings(2, savedCurrencies, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
                 Log.d(TAG, "saved: " + settings.toString());
                 return settings;
 
@@ -344,12 +348,12 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
                     return settings;
                 } else if (periodId == 1) {
                     calendar.add(Calendar.DATE, -7);
-                    settings =  new Settings(1, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
+                    settings =  new Settings(1, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
                     Log.d(TAG, "saved: " + settings.toString());
                     return settings;
                 } else if (periodId == 2) {
                     calendar.add(Calendar.MONTH, -1);
-                    settings =  new Settings(2, System.currentTimeMillis()/1000, calendar.getTimeInMillis()/1000);
+                    settings =  new Settings(2, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
                     Log.d(TAG, "saved: " + settings.toString());
                     return settings;
                 } else {

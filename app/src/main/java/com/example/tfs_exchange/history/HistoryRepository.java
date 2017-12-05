@@ -29,7 +29,6 @@ public class HistoryRepository implements HistoryContract.Repository {
     private final static String currencyMesage = "with currencies: ";
     private int periodFilter;
     private Set<String> currencyFilter;
-    private String dateFromFilter, dateToFilter;
     private long dateFromMillis, dateToMillis;
     private Resources resources = ExchangerApp.getAppResources();
     private DBHelper dbHelper = DBHelper.getInstance();
@@ -49,12 +48,12 @@ public class HistoryRepository implements HistoryContract.Repository {
         if (sharedPrefs.contains(resources.getString((R.string.saved_date_from)))) {
             //dateFromFilter = sharedPrefs.getString(resources.getString(R.string.saved_date_from), "");
             dateFromMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_from), 0);
-            Log.d(TAG, "DateFrom: " + dateFromFilter);
+            Log.d(TAG, "DateFrom: " + dateFromMillis);
         }
         if (sharedPrefs.contains(resources.getString((R.string.saved_date_to)))) {
             //dateToFilter = sharedPrefs.getString(resources.getString(R.string.saved_date_to), "");
             dateToMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_to), 0);
-            Log.d(TAG, "DateTo: " + dateToFilter);
+            Log.d(TAG, "DateTo: " + dateToMillis);
         }
 
         Log.d(TAG, "Period ID: " + String.valueOf(periodFilter));
@@ -65,7 +64,7 @@ public class HistoryRepository implements HistoryContract.Repository {
         getSharedPreferences();
         if (periodFilter == 0) {
             Log.d(TAG, dateMessage + "not selected");
-            if (currencyFilter == null || currencyFilter.size() == 0 && (dateFromFilter != null && dateToFilter != null)) {
+            if (currencyFilter == null || currencyFilter.size() == 0 && (dateFromMillis != 0 && dateToMillis != 0)) {
 
                 return Observable
                         .just(dbHelper.loadAllHistory())
@@ -80,7 +79,7 @@ public class HistoryRepository implements HistoryContract.Repository {
             }
         } else if (periodFilter == 3) {
             Log.d(TAG, dateMessage + "custom");
-            if (currencyFilter == null || currencyFilter.size() == 0 && (dateFromFilter != null && dateToFilter != null)) {
+            if (currencyFilter == null || currencyFilter.size() == 0 && (dateFromMillis != 0 && dateToMillis != 0)) {
                 Log.d(TAG, "dates:  " + dateFromMillis + " " + dateToMillis);
                 return Observable
                         .just(dbHelper.getSortedExchangeHistory(dateFromMillis, dateToMillis))

@@ -26,4 +26,42 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/analytics_recycler" />
 
+    <RadioGroup
+        android:id="@+id/choose_period"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="16dp"
+        android:checkedButton = "@+id/week_button">
+
+        <RadioButton
+            android:id ="@+id/week_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "неделя"
+
+            android:textColor="@color/colorText"
+            android:textSize="18sp"/>
+
+        <RadioButton
+            android:id="@+id/two_weeks_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2 недели"
+            android:textColor="@color/colorText"
+            android:textSize="18sp" />
+
+        <RadioButton
+            android:id="@+id/month_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="месяц"
+            android:textColor="@color/colorText"
+            android:textSize="18sp" />
+
+    </RadioGroup>
+
 </android.support.constraint.ConstraintLayout>

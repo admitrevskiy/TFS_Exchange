@@ -1,8 +1,15 @@
 package com.example.tfs_exchange.fragments;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,8 +44,11 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     private String currencyFrom;
     private String currencyTo;
+    private FragmentManager fragmentManager;
 
-    private ExchangeContract.Presenter mPresenter;
+    private long time;
+
+    private static ExchangeContract.Presenter mPresenter;
 
     private double rate;
 
@@ -77,6 +87,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     @OnClick(R.id.exchange_button)
     void onSaveClick() {
         mPresenter.sendExchange();
+        //showDialog();
         Log.d(TAG, " button clicked");
     }
 
@@ -94,7 +105,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         disactivateRate();
         mPresenter = new ExchangePresenter(this);
         mPresenter.getCurrenciesAndRate(getArguments());
-
+        fragmentManager = getFragmentManager();
         Log.d(TAG, "onCreateView");
         return exchangeFragmentRootView;
     }
@@ -105,6 +116,18 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         currencyAmountFromEdit.setText("1.00");
         currencyAmountFromEdit.setEnabled(true);
         currencyAmountToEdit.setText(String.valueOf(rate) + " ");
+        currencyAmountToEdit.setEnabled(true);
+        exchangeButton.setText("ОБМЕНЯТЬ");
+        exchangeButton.setEnabled(true);
+        setRate(rate);
+        Log.d(TAG, "rate activated");
+    }
+
+    @Override
+    public void activateRate(double rate, double amountFrom) {
+        currencyAmountFromEdit.setText(String.valueOf(amountFrom));
+        currencyAmountFromEdit.setEnabled(true);
+        currencyAmountToEdit.setText(String.valueOf(amountFrom*rate) + " ");
         currencyAmountToEdit.setEnabled(true);
         exchangeButton.setText("ОБМЕНЯТЬ");
         exchangeButton.setEnabled(true);
@@ -137,6 +160,16 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     }
 
     @Override
+    public String getAmountFrom() {
+        return currencyAmountFromEdit.getText().toString();
+    }
+
+    @Override
+    public String getAmountTo () {
+        return currencyAmountToEdit.getText().toString();
+    }
+
+    @Override
     public void setRate(double rate) {
         this.rate = rate;
     }
@@ -150,4 +183,63 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         double amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
         return new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, rate, dateAndTime[0], dateAndTime[1], millis);
     }
+
+    public static class ExchangeDialogFragment extends DialogFragment {
+
+        private static final String TAG = "ExchangeDialog";
+
+        String message = "";
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState)  {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+
+
+            builder.setTitle("Актуальный курс");
+            builder.setMessage(message);
+
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    mPresenter.sendExchange();
+                    Log.d(TAG, "OK");
+                }
+            });
+
+            builder.setNegativeButton("ОТМЕНА", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.d(TAG, "not Ok");
+                }
+            });
+
+            builder.setCancelable(true);
+
+            Log.d(TAG, "created");
+            return builder.create();
+        }
+
+        private void setMessage(String message) {
+            this.message = message;
+        }
+    }
+
+    @Override
+    public void showDialog(String message) {
+        FragmentManager manager = getFragmentManager();
+        ExchangeDialogFragment myDialogFragment = new ExchangeDialogFragment();
+        myDialogFragment.setMessage(message);
+        myDialogFragment.show(manager, ExchangeDialogFragment.TAG);
+    }
+
+    @Override
+    public void onPause() {
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.addToBackStack(TAG);
+        super.onPause();
+    }
+
+
 }

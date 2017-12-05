@@ -3,6 +3,8 @@ package com.example.tfs_exchange.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,6 +41,8 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
     @BindView(R.id.history_recycler_view)
     RecyclerView recyclerView;
 
+    @BindView(R.id.choose_filter)
+    android.support.design.widget.FloatingActionButton chooseFilter;
 
     @Override
     public void onPause() {
@@ -60,7 +64,24 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
 
         Log.d(TAG, " onCreateView" + this.hashCode());
 
+        chooseFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                replaceExchangeFragment();
+                /**
+                 getFilterCurrencies();
+                 if (filterCurrencies.size() > 0)
+                 {
+                 saveFilter();
+                 Log.d(TAG, "fab is clicked \n" + getFilterCurrencies().toString());
+                 }
+                 **/
+            }
+        });
+
         return historyFragmentRootView;
+
+
     }
 
     @Override
@@ -77,5 +98,15 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
+    }
+
+    private void replaceExchangeFragment() {
+        HistoryFilterFragment fragment = new HistoryFilterFragment();
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.addToBackStack(TAG);
+        fragmentTransaction.commit();
     }
 }

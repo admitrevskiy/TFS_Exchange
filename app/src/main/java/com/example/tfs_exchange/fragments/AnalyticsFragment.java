@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
@@ -37,8 +39,6 @@ import butterknife.ButterKnife;
 
 public class AnalyticsFragment extends Fragment implements AnalyticsContract.View {
 
-    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-
     private final static String TAG = "AnalyticsFragment";
 
     private Currency selectedCurrency;
@@ -56,6 +56,18 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     @BindView(R.id.graph)
     GraphView graph;
 
+    @BindView(R.id.choose_period)
+    RadioGroup choosePeriodGroup;
+
+    @BindView(R.id.week_button)
+    RadioButton weekButton;
+
+    @BindView(R.id.two_weeks_button)
+    RadioButton twoWeeksButton;
+
+    @BindView(R.id.month_button)
+    RadioButton monthButton;
+
     @Nullable
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,6 +82,32 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         mPresenter = new AnalyticsPresenter(this);
         mPresenter.getCurrencies();
         mPresenter.getRates(days, "RUB");
+
+        choosePeriodGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.week_button:
+                        Log.d(TAG, "week for " + selectedCurrency.getName());
+                        days = 7;
+                        mPresenter.getRates(days, selectedCurrency.getName());
+                        break;
+                    case R.id.two_weeks_button:
+                        days = 14;
+                        mPresenter.getRates(days, selectedCurrency.getName());
+                        Log.d(TAG, "2 weeks for " + selectedCurrency.getName());
+                        break;
+                    case R.id.month_button:
+                        days = 30;
+                        mPresenter.getRates(days, selectedCurrency.getName());
+                        Log.d(TAG, "month for " + selectedCurrency.getName());
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        });
 
         return analyticsFragmentRootView;
 
@@ -97,7 +135,13 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         recyclerView.setItemAnimator(itemAnimator);
     }
 
-    private void setFavorite(Currency currency) {
+    @Override
+    public Currency getSelectedCurrency() {
+        return selectedCurrency;
+    }
+
+    @Override
+    public void setFavorite(Currency currency) {
        for (Currency curr: currencies) {
            if (!curr.isFilter()) {
 
@@ -119,6 +163,7 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     @Override
     public void plotGraph(ArrayList<Float> list) {
+        graph.removeAllSeries();
         DataPoint[] dataPoints = new DataPoint[list.size()];
         String[] dates  = new String[days];
 
@@ -126,7 +171,7 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
         Date today = calendar.getTime();
         for (int i = 0; i < list.size(); i++) {
-            dataPoints[i] = new DataPoint(i, (double) list.get(i));
+            dataPoints[i] = new DataPoint(i+1, (double) list.get(i));
             calendar.add(Calendar.DATE, -1);
             today = calendar.getTime();
             Log.d(TAG, "Plotting " + dataPoints.toString());
@@ -134,6 +179,13 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
 
         graph.addSeries(series);
+        graph.getViewport().setMinX(1);
+        graph.getViewport().setMaxX(days);
+        graph.onDataChanged(false, false);
+
+
+        graph.getViewport().setScalable(true);
+        graph.getViewport().setScrollable(true);
     }
 
     @Override

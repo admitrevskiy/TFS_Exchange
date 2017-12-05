@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.example.tfs_exchange.api.FixerApiHelper;
 
+import java.util.Date;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -19,8 +21,10 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
 
     private ExchangeContract.View mView;
     private ExchangeContract.Repository mRepository;
-
+    private long time;
     private Disposable rateSubscription;
+    private String currencyFrom, currencyTo;
+    private double amountFrom;
 
     private double rate;
 
@@ -31,6 +35,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
 
     @Override
     public void subscribeRate(String currencyFrom, String currencyTo) {
+        time = new Date().getTime();
         rateSubscription = new FixerApiHelper()
                 .createApi()
                 .latest(currencyFrom, currencyTo)
@@ -60,8 +65,8 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     @Override
     public void getCurrenciesAndRate(Bundle bundle) {
         if (bundle!= null) {
-            String currencyFrom = bundle.getStringArray("currencies")[0];
-            String currencyTo = bundle.getStringArray("currencies")[1];
+            currencyFrom = bundle.getStringArray("currencies")[0];
+            currencyTo = bundle.getStringArray("currencies")[1];
 
             mView.setCurrencies(currencyFrom, currencyTo);
 
@@ -71,8 +76,41 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
         }
     }
 
+
     @Override
     public void sendExchange() {
-        mRepository.setExchangeToDB(mView.getExchange());
+        long now = new Date().getTime();
+        if (now - time < 5000) {
+            Log.d(TAG, "time is Ok");
+            mRepository.setExchangeToDB(mView.getExchange());
+        } else {
+            try {
+                amountFrom = Double.parseDouble(mView.getAmountFrom());
+                time = now;
+                Disposable newSubscription = new FixerApiHelper()
+                        .createApi()
+                        .latest(currencyFrom, currencyTo)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(apiResponse -> {
+                            rate = apiResponse.getRates().getRate();
+                            if (rate != 0) {
+                                mView.activateRate(rate, amountFrom);
+                                mView.showDialog(amountFrom + "  -  " + amountFrom*rate);
+                            } else {
+                                Log.d(TAG, " some problems with loading new rate");
+                            }
+
+                        }, throwable -> {
+                            Log.d(TAG, " connection problems");
+                            mView.disactivateRate();
+                        });
+                Log.d(TAG, "new Subscribe");
+            } catch (Exception e) {
+                Log.d(TAG, "trouble with new subscription");
+            }
+
+        }
+
     }
 }

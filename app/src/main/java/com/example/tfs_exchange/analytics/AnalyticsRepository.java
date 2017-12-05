@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.example.tfs_exchange.api.FixerApi;
 import com.example.tfs_exchange.api.FixerApiHelper;
+import com.example.tfs_exchange.comparators.FavoriteComparator;
+import com.example.tfs_exchange.comparators.LastUsedComparator;
 import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Currency;
 
@@ -11,6 +13,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +31,9 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
 
     private static final String TAG = "AnalyticsRepository";
 
+    private LastUsedComparator lastUsedComp = new LastUsedComparator();
+    private FavoriteComparator faveComp = new FavoriteComparator();
+
     DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     private DBHelper dbHelper = DBHelper.getInstance();
 
@@ -36,6 +42,10 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
         return Observable
                 .just(dbHelper.loadAll())
                 .subscribeOn(Schedulers.io())
+                .map(dates -> {
+                    sortCurrencies(dates);
+                    return dates;
+                })
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
@@ -51,6 +61,13 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
                     return list;
                 })
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    private void sortCurrencies(List<Currency> currencies) {
+        Collections.sort(currencies, lastUsedComp);
+        Collections.sort(currencies, faveComp);
+        //adapter.notifyDataSetChanged();
+        Log.d(TAG, " sortCurrencies");
     }
 
 

@@ -58,6 +58,9 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String FAVORITE = "favorite";
     private static final String FILTER = "filter";
 
+    private static final String TABLE_RATES_NAME = "rates_name";
+
+
     private static final String CURRENCY_TABLE = "create table " + TABLE_CURRENCY_NAME + " ("
             + CURRENCY_BASE + " string primary key, "
             + LAST_USED + " integer, "

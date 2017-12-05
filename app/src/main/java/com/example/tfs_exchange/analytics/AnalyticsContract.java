@@ -24,6 +24,8 @@ public interface AnalyticsContract {
         void setAdapter(List<Currency> currencies);
         void plotGraph(ArrayList<Float> list);
         void refreshGraph();
+        void setFavorite(Currency currency);
+        Currency getSelectedCurrency();
 
     }
 
