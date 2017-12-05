@@ -2,9 +2,14 @@ package com.example.tfs_exchange.currency_select;
 
 import android.util.Log;
 
+import com.example.tfs_exchange.comparators.FavoriteComparator;
+import com.example.tfs_exchange.comparators.LastUsedComparator;
+import com.example.tfs_exchange.comparators.LongClickedComparator;
 import com.example.tfs_exchange.model.Currency;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import io.reactivex.disposables.Disposable;
@@ -20,7 +25,11 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
     private final CurrencyContract.View mView;
 
     private List<Currency> currencies;
-
+    private boolean noItemLongClicked;
+    private Currency selectedCurrency;
+    private FavoriteComparator faveComp = new FavoriteComparator();
+    private LastUsedComparator lastUsedComp = new LastUsedComparator();
+    private LongClickedComparator longClickedComp = new LongClickedComparator();
 
     public CurrencySelectPresenter(CurrencyContract.View mView) {
         this.mView = mView;
@@ -29,33 +38,100 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
     @Override
     public void getCurrencies() {
-        currencies = new ArrayList<>();
-        Disposable currencySubscription = mRepository.loadCurrencies()
-                .subscribe(this::showCurrencies, throwable -> {
-                    Log.d(TAG, "problems, bro");
-                });
+        noItemLongClicked = true;
+        selectedCurrency = null;
+        //currencies = new ArrayList<>();
+        if (currencies == null) {
+            Disposable currencySubscription = mRepository.loadCurrencies()
+                    .subscribe(this::showCurrencies, throwable -> {
+                        Log.d(TAG, "problems, bro");
+                    });
+            Log.d(TAG, "loading from repository");
+        } else {
+            mView.setCurrencies(currencies);
+            Log.d(TAG, "show actual currencies");
+        }
     }
+
 
     @Override
     public void showCurrencies(List<Currency> currencies) {
         if (currencies != null) {
+            this.currencies = currencies;
+            //sortCurrencies();
             mView.setAdapter(currencies);
             mView.setCurrencies(currencies);
         }
     }
 
     @Override
-    public void setFaveToDb(Currency currency) {
-        mRepository.setFaveToDB(currency);
+    public void onFavoriteChanged(Currency currency) {
+        //Меняем избранность валюты
+        int fave;
+        if (currency.isFavorite())
+        {
+            currency.setFavorite(false);
+            fave = 0;
+        } else {
+            currency.setFavorite(true);
+            fave = 1;
+        }
+
+        //Говорим репозиторию, что изменение избранности нужно записать в БД
+        mRepository.setFaveToDB(currency, fave);
+
+        //Сортируем валюты
+        sortCurrencies();
+
+        //Передаем в view измененный список валют
+        //mView.setCurrencies(currencies);
+    }
+
+
+    private void onTimeChanged(Currency currency) {
+        //Получаем настоящее время и присваиваем валюте
+        long time = new Date().getTime()/1000;
+        currency.setLastUse(time);
+
+        //Сообщаем репозиторию, что нужно записать новое время для валюты
+        mRepository.setTimeToDB(currency, time);
+
     }
 
     @Override
-    public void setTime(Currency currency) {
-        mRepository.setTimeToDB(currency);
+    public void onCurrencyLongClicked(Currency currency) {
+        Log.d("Currency item ", currency.getName() + " long clicked" );
+        currency.setLongClicked(true);
+        Collections.sort(currencies, longClickedComp);
+        currency.setLongClicked(false);
+        showCurrencies(currencies);
+        //mView.notifyDataSetChanged();
+        noItemLongClicked = false;
+        selectedCurrency = currency;
+        onTimeChanged(currency);
     }
 
     @Override
-    public String getCurrencyForExchange(Currency selectedCurrency) {
+    public void onCurrencyClicked(Currency currency) {
+        if (selectedCurrency != null) {
+            Log.d(TAG, "selected currency: " + selectedCurrency.getName());
+        }
+        onTimeChanged(currency);
+        //Если ни одна валюта не LongClicked, выбираем вторую валюту по логике из ТЗ
+        //Если уже выбрана LongClicked валюта, текущая валюта являтеся второй
+        //Запускаем Exchange фрагмент
+        if (noItemLongClicked) {
+
+            mView.replaceByExchangeFragment(currency.getName(), getCurrencyForExchange(currency));
+        }
+        else {
+
+            mView.replaceByExchangeFragment(selectedCurrency.getName(), currency.getName());
+        }
+    }
+
+
+    private String getCurrencyForExchange(Currency selectedCurrency) {
         for (Currency currency : currencies) {
             if (currency.isFavorite() && !currency.getName().equals(selectedCurrency.getName())) {
                 return currency.getName();
@@ -68,5 +144,15 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
             return "RUB";
         }
         return "USD";
+    }
+
+    //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
+    private void sortCurrencies() {
+        Collections.sort(currencies, lastUsedComp);
+        Collections.sort(currencies, faveComp);
+        //mView.setAdapter(currencies);
+        mView.setCurrencies(currencies);
+        Log.d(TAG, " sortCurrencies");
+        Log.d(TAG, currencies.toString());
     }
 }

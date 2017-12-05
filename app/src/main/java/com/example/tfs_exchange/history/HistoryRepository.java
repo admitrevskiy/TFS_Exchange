@@ -10,6 +10,8 @@ import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Exchange;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,7 @@ public class HistoryRepository implements HistoryContract.Repository {
     private SharedPreferences sharedPrefs;
 
     private void getSharedPreferences() {
+
         sharedPrefs = ExchangerApp.getContext().getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
         if (sharedPrefs.contains(resources.getString(R.string.period_id))) {
             periodFilter = sharedPrefs.getInt(resources.getString(R.string.period_id), 0);
@@ -61,6 +64,9 @@ public class HistoryRepository implements HistoryContract.Repository {
 
     @Override
     public Observable<List<Exchange>> loadHistory() {
+        Date now = new Date (System.currentTimeMillis());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);
         getSharedPreferences();
         if (periodFilter == 0) {
             Log.d(TAG, dateMessage + "not selected");
@@ -93,30 +99,32 @@ public class HistoryRepository implements HistoryContract.Repository {
                         .observeOn(AndroidSchedulers.mainThread());
             }
         } else if (periodFilter == 1) {
+            calendar.add(Calendar.DATE, -7);
             Log.d(TAG, dateMessage + "week");
             if (currencyFilter == null || currencyFilter.size() == 0) {
                 return Observable
-                        .just(dbHelper.getSortedExchangeHistory(dateFromMillis, dateToMillis))
+                        .just(dbHelper.getSortedExchangeHistory(calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread());
             } else {
                 Log.d(TAG, currencyMesage + currencyFilter.toString());
                 return Observable
-                        .just(dbHelper.getSortedExchangeHistory(currencyFilter, dateFromMillis, dateToMillis))
+                        .just(dbHelper.getSortedExchangeHistory(currencyFilter, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread());
             }
         } else {
+            calendar.add(Calendar.MONTH, -1);
             Log.d(TAG, dateMessage + "month");
             if (currencyFilter == null || currencyFilter.size() == 0) {
                 return Observable
-                        .just(dbHelper.getSortedExchangeHistory(dateFromMillis, dateToMillis))
+                        .just(dbHelper.getSortedExchangeHistory(calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread());
             } else {
                 Log.d(TAG, currencyMesage + currencyFilter.toString());
                 return Observable
-                        .just(dbHelper.getSortedExchangeHistory(currencyFilter, dateFromMillis, dateToMillis))
+                        .just(dbHelper.getSortedExchangeHistory(currencyFilter, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread());
             }

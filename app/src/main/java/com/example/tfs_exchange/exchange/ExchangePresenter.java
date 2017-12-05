@@ -33,14 +33,19 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
         this.mRepository = new ExchangeRepository();
     }
 
+    /** перенести в REPOSITORY **/
+
     @Override
     public void subscribeRate(String currencyFrom, String currencyTo) {
         time = new Date().getTime();
-        rateSubscription = new FixerApiHelper()
+        rateSubscription =
+                /**new FixerApiHelper()
                 .createApi()
                 .latest(currencyFrom, currencyTo)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                 **/
+                mRepository.loadRate(currencyFrom, currencyTo)
                 .subscribe(apiResponse -> {
                     rate = apiResponse.getRates().getRate();
                     if (rate != 0) {
@@ -87,11 +92,14 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
             try {
                 amountFrom = Double.parseDouble(mView.getAmountFrom());
                 time = now;
-                Disposable newSubscription = new FixerApiHelper()
+                Disposable newSubscription =
+                        /**new FixerApiHelper()
                         .createApi()
                         .latest(currencyFrom, currencyTo)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
+                         **/
+                        mRepository.loadRate(currencyFrom, currencyTo)
                         .subscribe(apiResponse -> {
                             rate = apiResponse.getRates().getRate();
                             if (rate != 0) {

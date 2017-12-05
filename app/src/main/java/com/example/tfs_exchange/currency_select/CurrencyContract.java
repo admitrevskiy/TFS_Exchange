@@ -14,19 +14,22 @@ public interface CurrencyContract {
     interface View {
         void setAdapter(List<Currency> currencies);
         void setCurrencies(List<Currency> currencies);
+        void replaceByExchangeFragment(String currencyFrom, String currencyTo);
     }
 
     interface Presenter {
         void getCurrencies();
         void showCurrencies(List<Currency> currencies);
-        String getCurrencyForExchange(Currency selectedCurrency);
-        void setFaveToDb(Currency currency);
-        void setTime(Currency currency);
+        //String getCurrencyForExchange(Currency selectedCurrency);
+        void onFavoriteChanged(Currency currency);
+        //void onTimeChanged(Currency currency);
+        void onCurrencyLongClicked(Currency currency);
+        void onCurrencyClicked(Currency currency);
     }
 
     interface Repository {
         Observable<List<Currency>> loadCurrencies();
-        void setFaveToDB(Currency currency);
-        void setTimeToDB(Currency currency);
+        void setFaveToDB(Currency currency, int fave);
+        void setTimeToDB(Currency currency, long time);
     }
 }

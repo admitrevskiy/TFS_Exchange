@@ -16,20 +16,15 @@ import com.example.tfs_exchange.currency_select.CurrencySelectPresenter;
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
-import com.example.tfs_exchange.comparators.FavoriteComparator;
-import com.example.tfs_exchange.comparators.LastUsedComparator;
-import com.example.tfs_exchange.comparators.LongClickedComparator;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Created by pusya on 27.10.17.
@@ -39,29 +34,21 @@ import butterknife.ButterKnife;
 public class CurrencySelectFragment extends Fragment implements CurrencyContract.View {
 
     private final static String TAG = "CurrencySelectFragment";
-    private FavoriteComparator faveComp;
-    private LastUsedComparator lastUsedComp;
-    private LongClickedComparator longClickedComp;
-    private boolean noItemLongClicked;
-    private Currency selectedCurrency;
     private CurrencyContract.Presenter mPresenter;
     private FragmentManager fragmentManager;
+
+    private Unbinder unbinder;
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
 
     private CurrencyRecyclerListAdapter adapter;
 
-    private List<Currency> currencies = new ArrayList<Currency>();
 
     @Nullable
     @Override
     public void onPause() {
-        sortCurrencies();
-        noItemLongClicked = true;
-        selectedCurrency = null;
-        currencies = null;
-        currencies = new ArrayList<>();
+
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.addToBackStack(TAG);
         super.onPause();
@@ -73,15 +60,10 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View firstFragmentRootView = inflater.inflate(R.layout.currency_select_fragment, container, false);
 
-        ButterKnife.bind(this, firstFragmentRootView);
-
-        faveComp = new FavoriteComparator();
-        lastUsedComp = new LastUsedComparator();
-        longClickedComp = new LongClickedComparator();
+        unbinder = ButterKnife.bind(this, firstFragmentRootView);
 
         fragmentManager = getFragmentManager();
 
-        noItemLongClicked = true;
         mPresenter = new CurrencySelectPresenter(this);
         mPresenter.getCurrencies();
 
@@ -94,8 +76,9 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                mPresenter.setFaveToDb(currency);
-                sortCurrencies();
+
+                //Сообщаем презентеру, что у валюты нажата звездочка
+                mPresenter.onFavoriteChanged(currency);
                 Log.d(TAG, "Currency item " + currency.getName() + " fave changed");
             }
 
@@ -103,31 +86,17 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
             @Override
             public void onItemClick(Currency currency) {
                 Log.d("Currency item ", " " + currency.getName() + " short clicked");
-                mPresenter.setTime(currency);
-                sortCurrencies();
-                //dbHelper.setTimeToDB(currency);
-                if (noItemLongClicked) {
-                    replaceExchangeFragment(currency.getName(), getCurrencyForExchange(currency));
-                }
-                else replaceExchangeFragment(selectedCurrency.getName(), currency.getName());
+
+                //Сообщаем презентеру, что валюта нажата
+                mPresenter.onCurrencyClicked(currency);
             }
         }, new  CurrencyRecyclerListAdapter.OnItemLongClickListener() {
             @Override
             public void onItemLongClick(Currency currency, int id) {
-                if (noItemLongClicked) {
-                    Log.d("Currency item ", currency.getName() + " long clicked" );
-                    currency.setLongClicked(true);
-                    Collections.sort(currencies, longClickedComp);
-                    currency.setLongClicked(false);
-                    adapter.notifyDataSetChanged();
-                    noItemLongClicked = false;
-                    selectedCurrency = currency;
-                    mPresenter.setTime(currency);
-                    //dbHelper.setTimeToDB(currency);
-                }
-                else {
-                    Log.d("Currency item ", currency.getName() + " long clicked, but another currency is already choosed" );
-                }
+                Log.d("Currency item ", " " + currency.getName() + " long clicked");
+
+                //Сообщаем презентеру, что валюта LongClicked
+                mPresenter.onCurrencyLongClicked(currency);
             }
         });
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -145,20 +114,13 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
 
     @Override
     public void setCurrencies(List<Currency> currencies) {
-        this.currencies = currencies;
-        sortCurrencies();
-    }
-
-
-    //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
-    private void sortCurrencies() {
-        Collections.sort(currencies, lastUsedComp);
-        Collections.sort(currencies, faveComp);
         adapter.notifyDataSetChanged();
-        Log.d(TAG, " sortCurrencies");
+        Log.d(TAG, currencies.toString());
     }
 
-    private void replaceExchangeFragment(String currencyFrom, String currencyTo) {
+
+    @Override
+    public void replaceByExchangeFragment(String currencyFrom, String currencyTo) {
         ExchangeFragment fragment = new ExchangeFragment();
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -170,25 +132,10 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         fragmentTransaction.commit();
     }
 
-    //Выбор валюты после LongClick
-    private String getCurrencyForExchange(Currency selectedCurrency) {
-        for (Currency currency : currencies) {
-            if (currency.isFavorite() && !currency.getName().equals(selectedCurrency.getName())) {
-                return currency.getName();
-            }
-            else if (!currency.isFavorite()) {
-                break;
-            }
-        }
-        if (selectedCurrency.getName().equals("USD")) {
-            return "RUB";
-        }
-        return "USD";
-    }
-
     @Nullable
     @Override
     public void onDetach() {
+        unbinder.unbind();
         super.onDetach();
     }
 

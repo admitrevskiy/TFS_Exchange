@@ -100,4 +100,9 @@ public class Currency {
         //hash +=  (int)((char)this.getName().charAt(0));
         return hash;
     }
+
+    @Override
+    public String toString(){
+        return this.getName() + " last used " + this.getLastUse() + " favorite " + String.valueOf(this.isFavorite());
+    }
 }

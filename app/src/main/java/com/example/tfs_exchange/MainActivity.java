@@ -64,7 +64,7 @@ public class MainActivity extends FragmentActivity {
 
         CurrencySelectFragment currencySelectFragment = new CurrencySelectFragment();
         HisroryFragment historyFragment = new HisroryFragment();
-        HistoryFilterFragment fragment = new HistoryFilterFragment();
+        //HistoryFilterFragment fragment = new HistoryFilterFragment();
         AnalyticsFragment analyticsFragment = new AnalyticsFragment();
         addFragment(currencySelectFragment);
 
@@ -89,7 +89,7 @@ public class MainActivity extends FragmentActivity {
                         }
                         Log.d(TAG, fragmentManager.getBackStackEntryCount() + " fragments in backstack");
                          **/
-                        replaceFragment(currencySelectFragment, currencyTAG);
+                        addFragment(currencySelectFragment);
                         break;
 
                     case R.id.history:
@@ -106,7 +106,7 @@ public class MainActivity extends FragmentActivity {
                         }
                         Log.d(TAG, fragmentManager.getBackStackEntryCount() + " fragments in backstack");
                          **/
-                        replaceFragment(historyFragment, historyTAG);
+                        addFragment(historyFragment);
                         break;
 
                     case R.id.analytics:
@@ -120,7 +120,7 @@ public class MainActivity extends FragmentActivity {
                         }
                         Log.d(TAG, fragmentManager.getBackStackEntryCount() + " fragments in backstack");
                          **/
-                        replaceFragment(analyticsFragment, analyticsTAG);
+                        addFragment(analyticsFragment);
                         break;
 
                 }
@@ -133,10 +133,11 @@ public class MainActivity extends FragmentActivity {
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.fragment_container, fragment);
-        fragmentTransaction.addToBackStack(currencyTAG);
+        //fragmentTransaction.addToBackStack(currencyTAG);
         fragmentTransaction.commit();
     }
 
+    /**
     private void replaceFragment (Fragment fragment, String TAG) {
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -144,6 +145,7 @@ public class MainActivity extends FragmentActivity {
         fragmentTransaction.addToBackStack(TAG);
         fragmentTransaction.commit();
     }
+     **/
 
 }
 
