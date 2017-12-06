@@ -29,6 +29,13 @@ public class Exchange {
         this.millis = millis;
     }
 
+    public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo) {
+        this.currencyFrom = currencyFrom;
+        this.currencyTo = currencyTo;
+        this.amountFrom = amountFrom;
+        this.amountTo = amountTo;
+    }
+
     public Exchange(String currencyFrom, String currencyTo, double amountFrom, double amountTo, String date, String time, long millis) {
         this.currencyFrom = currencyFrom;
         this.currencyTo = currencyTo;
@@ -91,5 +98,13 @@ public class Exchange {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public void setMillis(long millis) {
+        this.millis = millis;
     }
 }

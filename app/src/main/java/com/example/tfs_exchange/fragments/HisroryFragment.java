@@ -60,28 +60,18 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
         unbinder = ButterKnife.bind(this, historyFragmentRootView);
 
         mPresenter = new HistoryPresenter(this);
-        mPresenter.subscribeHistory();
-
-        Log.d(TAG, " onCreateView" + this.hashCode());
+        mPresenter.getHistory();
 
         chooseFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                replaceExchangeFragment();
-                /**
-                 getFilterCurrencies();
-                 if (filterCurrencies.size() > 0)
-                 {
-                 saveFilter();
-                 Log.d(TAG, "fab is clicked \n" + getFilterCurrencies().toString());
-                 }
-                 **/
+                mPresenter.onFilterButtonClicked();
             }
         });
 
+        Log.d(TAG, " onCreateView" + this.hashCode());
+
         return historyFragmentRootView;
-
-
     }
 
     @Override
@@ -100,11 +90,11 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
         recyclerView.setItemAnimator(itemAnimator);
     }
 
-    private void replaceExchangeFragment() {
+    @Override
+    public void replaceByFilterFragment() {
         HistoryFilterFragment fragment = new HistoryFilterFragment();
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.addToBackStack(TAG);
         fragmentTransaction.commit();

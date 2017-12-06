@@ -4,7 +4,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.example.tfs_exchange.api.FixerApiHelper;
+import com.example.tfs_exchange.model.Exchange;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -26,6 +28,8 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     private String currencyFrom, currencyTo;
     private double amountFrom;
 
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy '\n' HH:mm:ss");
+
     private double rate;
 
     public ExchangePresenter(ExchangeContract.View mView) {
@@ -39,12 +43,6 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     public void subscribeRate(String currencyFrom, String currencyTo) {
         time = new Date().getTime();
         rateSubscription =
-                /**new FixerApiHelper()
-                .createApi()
-                .latest(currencyFrom, currencyTo)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                 **/
                 mRepository.loadRate(currencyFrom, currencyTo)
                 .subscribe(apiResponse -> {
                     rate = apiResponse.getRates().getRate();
@@ -83,22 +81,23 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
 
 
     @Override
-    public void sendExchange() {
+    public void onExchange() {
         long now = new Date().getTime();
         if (now - time < 5000) {
             Log.d(TAG, "time is Ok");
-            mRepository.setExchangeToDB(mView.getExchange());
+            Date time = new Date();
+            long millis = time.getTime()/1000;
+            String[] dateAndTime = dateFormat.format(time).split("\n");
+            Exchange exchange = mView.getExchange();
+            exchange.setDate(dateAndTime[0]);
+            exchange.setTime(dateAndTime[1]);
+            exchange.setMillis(time.getTime()/1000);
+            mRepository.setExchangeToDB(exchange);
         } else {
             try {
                 amountFrom = Double.parseDouble(mView.getAmountFrom());
                 time = now;
-                Disposable newSubscription =
-                        /**new FixerApiHelper()
-                        .createApi()
-                        .latest(currencyFrom, currencyTo)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                         **/
+                rateSubscription =
                         mRepository.loadRate(currencyFrom, currencyTo)
                         .subscribe(apiResponse -> {
                             rate = apiResponse.getRates().getRate();

@@ -20,13 +20,23 @@ import io.reactivex.disposables.Disposable;
 
 public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
+    //Тэг
     private static final String TAG = "CurrencySelectPresenter";
+
+    //MVP
     private final CurrencyContract.Repository mRepository;
     private final CurrencyContract.View mView;
 
+    //Список валют
     private List<Currency> currencies;
-    private boolean noItemLongClicked;
+
+    //LongClicked валюта
     private Currency selectedCurrency;
+
+    //Флаг
+    private boolean noItemLongClicked;
+
+    //Компараторы
     private FavoriteComparator faveComp = new FavoriteComparator();
     private LastUsedComparator lastUsedComp = new LastUsedComparator();
     private LongClickedComparator longClickedComp = new LongClickedComparator();
@@ -36,6 +46,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         mRepository = new CurrencyRepository();
     }
 
+    //Загружаем валюты и отдамем их view
     @Override
     public void getCurrencies() {
         noItemLongClicked = true;
@@ -54,6 +65,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
     }
 
 
+    //Передаем валюты view
     @Override
     public void showCurrencies(List<Currency> currencies) {
         if (currencies != null) {
@@ -64,6 +76,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         }
     }
 
+    //Нажата звездочка
     @Override
     public void onFavoriteChanged(Currency currency) {
         //Меняем избранность валюты
@@ -82,12 +95,9 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
         //Сортируем валюты
         sortCurrencies();
-
-        //Передаем в view измененный список валют
-        //mView.setCurrencies(currencies);
     }
 
-
+    //
     private void onTimeChanged(Currency currency) {
         //Получаем настоящее время и присваиваем валюте
         long time = new Date().getTime()/1000;
@@ -105,7 +115,6 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         Collections.sort(currencies, longClickedComp);
         currency.setLongClicked(false);
         showCurrencies(currencies);
-        //mView.notifyDataSetChanged();
         noItemLongClicked = false;
         selectedCurrency = currency;
         onTimeChanged(currency);
@@ -131,6 +140,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
     }
 
 
+    //Получаем вторую валюту для обмена по ТЗ
     private String getCurrencyForExchange(Currency selectedCurrency) {
         for (Currency currency : currencies) {
             if (currency.isFavorite() && !currency.getName().equals(selectedCurrency.getName())) {

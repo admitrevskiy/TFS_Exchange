@@ -89,7 +89,7 @@ public class MainActivity extends FragmentActivity {
                         }
                         Log.d(TAG, fragmentManager.getBackStackEntryCount() + " fragments in backstack");
                          **/
-                        addFragment(currencySelectFragment);
+                        replaceFragment(currencySelectFragment);
                         break;
 
                     case R.id.history:
@@ -106,7 +106,7 @@ public class MainActivity extends FragmentActivity {
                         }
                         Log.d(TAG, fragmentManager.getBackStackEntryCount() + " fragments in backstack");
                          **/
-                        addFragment(historyFragment);
+                        replaceFragment(historyFragment);
                         break;
 
                     case R.id.analytics:
@@ -120,7 +120,7 @@ public class MainActivity extends FragmentActivity {
                         }
                         Log.d(TAG, fragmentManager.getBackStackEntryCount() + " fragments in backstack");
                          **/
-                        addFragment(analyticsFragment);
+                        replaceFragment(analyticsFragment);
                         break;
 
                 }
@@ -137,15 +137,14 @@ public class MainActivity extends FragmentActivity {
         fragmentTransaction.commit();
     }
 
-    /**
-    private void replaceFragment (Fragment fragment, String TAG) {
+
+    private void replaceFragment (Fragment fragment) {
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.addToBackStack(TAG);
+        //fragmentTransaction.addToBackStack(TAG);
         fragmentTransaction.commit();
     }
-     **/
 
 }
 

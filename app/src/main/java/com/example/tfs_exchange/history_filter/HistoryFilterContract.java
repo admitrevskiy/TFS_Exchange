@@ -15,17 +15,22 @@ public interface HistoryFilterContract {
     interface View {
         void setAdapter(List<Currency> currencies);
         void setCurrencies(List<Currency> currencies);
-        Settings getSettings();
+        int getPeriodId();
+        String getDateFrom();
+        String getDateTo();
+        void popBackStack();
     }
 
     interface Presenter {
         void getCurrencies();
         void showCurrencies(List<Currency> currencies);
-        void getAndSaveSettings();
+        void onSaveSettings();
+        void onCurrencyClicked(Currency currency);
     }
 
     interface Repository {
         Observable<List<Currency>> loadCurrencies();
         void saveSettings(Settings settings);
+        void setFilterToDB(String currencyName, int filter);
     }
 }

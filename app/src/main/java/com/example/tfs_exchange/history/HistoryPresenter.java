@@ -29,12 +29,17 @@ public class HistoryPresenter implements HistoryContract.Presenter {
     }
 
     @Override
-    public void subscribeHistory() {
+    public void getHistory() {
         exchanges = new ArrayList<>();
         Disposable historySubscription = mRepostory.loadHistory()
                 .subscribe(this::showHistory, throwable -> {
                     Log.d(TAG, "problems, bro");
                 });
+    }
+
+    @Override
+    public void onFilterButtonClicked() {
+        mView.replaceByFilterFragment();
     }
 
     private void showHistory(List<Exchange> exchanges) {

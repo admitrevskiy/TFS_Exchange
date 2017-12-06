@@ -21,6 +21,10 @@ public class Settings {
         }
     }
 
+    public Settings(){
+
+    }
+
     public Settings(int period_id) {
         this.period_id = period_id;
     }

@@ -4,16 +4,10 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
-
-import com.example.tfs_exchange.comparators.FavoriteComparator;
-import com.example.tfs_exchange.comparators.LastUsedComparator;
-import com.example.tfs_exchange.comparators.LongClickedComparator;
 import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Currency;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -22,23 +16,27 @@ import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by pusya on 30.11.17.
+ * Здесь использую чистый SQLite без ORM для понимания происходящего
  */
 
 public class CurrencyRepository implements CurrencyContract.Repository {
 
+    //Тэг
     private static final String TAG = "CurrencyRepository";
-    private ContentValues cv;
-    private List<Currency> currencies = new ArrayList<Currency>();
 
+    //Синглтон
+    private DBHelper dbHelper = DBHelper.getInstance();
+
+    //Content values
+    private ContentValues cv;
+
+    //Строки для работы с базой
     private static final String TABLE_CURRENCY_NAME = "currency_name";
     private static final String CURRENCY_BASE = "currency_base";
     private static final String LAST_USED = "last_used";
-
-    private DBHelper dbHelper = DBHelper.getInstance();
     private static final String FAVORITE = "favorite";
-    private FavoriteComparator faveComp = new FavoriteComparator();
-    private LastUsedComparator lastUsedComp = new LastUsedComparator();
-    //private LongClickedComparator longClickedComp = new LongClickedComparator();
+
+    //SQL команда для загрузки всех валют из базы
     private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC";
 
     @Override
@@ -51,6 +49,7 @@ public class CurrencyRepository implements CurrencyContract.Repository {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    //Записываем избранность в БД
     @Override
     public void setFaveToDB (Currency currency, int fave) {
         cv = new ContentValues();
@@ -58,24 +57,21 @@ public class CurrencyRepository implements CurrencyContract.Repository {
             cv.put(FAVORITE, fave);
             db.update(TABLE_CURRENCY_NAME, cv, CURRENCY_BASE + " = ?", new String[]{currency.getName()});
             Log.d(TAG, " " + currency.getName() + " favorite changed");
-            //dbHelper.setFaveToDB(currency);
         }
     }
 
+    //Записываем время последнего использования в БД
     @Override
     public void setTimeToDB(Currency currency, long time) {
         cv = new ContentValues();
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
-            //long lastUse = new Date().getTime();
-            //int time = (int)lastUse/1000;
-            //currency.setLastUse(lastUse);
             cv.put(LAST_USED, time);
             db.update(TABLE_CURRENCY_NAME, cv, CURRENCY_BASE + " = ?", new String[] {currency.getName()});
             Log.d(TAG, " " + currency.getName() + " lastUsed changed " + time );
         }
-        //dbHelper.setTimeToDB(currency);
     }
 
+    //Загрузка всех валют из БД
     private List<Currency> loadAll() {
         List<Currency> currencies = new ArrayList<>();
         Currency currency;
@@ -108,7 +104,6 @@ public class CurrencyRepository implements CurrencyContract.Repository {
 
                     } while (cursor.moveToNext());
                 }
-                //sortCurrencies();
             }
         }
         return currencies;

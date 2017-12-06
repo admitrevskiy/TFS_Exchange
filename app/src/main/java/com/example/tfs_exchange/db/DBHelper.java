@@ -23,7 +23,6 @@ import java.util.TreeSet;
 /**
  * Created by pusya on 16.10.17.
  * Читать http://sqlite.org/datatype3.html
- * Заметка от 7.11: мигрировать на Room
  */
 
 //Создаем помощник работы с SQLite на чистом SQLite
@@ -36,7 +35,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private SQLiteDatabase db;
     private DBHelper dbHelper;
 
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd '\n' HH:mm:ss");
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd '\n' HH:mm:ss");
 
     //Назначаем имя базы данных и версию
     private static final String DATA_BASE_NAME = "exchangerDB";
@@ -79,41 +78,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + EXCHANGE_MILLIS + " integer "
             + ");";
 
-    private static final String GET_HISTORY = "SELECT * FROM " + TABLE_EXCHANGE_NAME;
-
     private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC";
-
-    private String getExchangeHistory(Set<String> currencies) {
-        String SQLQuery = "";
-        for (String currency: currencies) {
-            SQLQuery += EXCHANGE_BASE + " = '" + currency + "' OR " + EXCHANGE_SYMBOLS + " = '" + currency + "' OR ";
-        }
-        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE " + SQLQuery.substring(0, SQLQuery.length() - 3);
-    }
-
-    private String getExchangeHistory(long dateFrom, long dateTo) {
-        String SQLQuery = "";
-        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE "
-                + EXCHANGE_MILLIS + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
-    }
-
-    private String getExchangeHistory(Set<String> currencies, long dateFrom, long dateTo) {
-        String SQLQuery = "";
-        for (String currency: currencies) {
-            SQLQuery += EXCHANGE_BASE + " = '" + currency + "' OR " + EXCHANGE_SYMBOLS + " = '" + currency + "' OR ";
-        }
-        return "SELECT * FROM " + TABLE_EXCHANGE_NAME + " WHERE ("
-                + SQLQuery.substring(0, SQLQuery.length() - 4) + ") AND  "
-                + EXCHANGE_MILLIS + " BETWEEN '" + dateFrom + "' AND '" + dateTo + "'";
-    }
-
-    private String getExchangeHistory() {
-        return "SELECT * FROM " + TABLE_EXCHANGE_NAME;
-    }
-
-    private String getFilter(String name) {
-        return "SELECT * FROM " + TABLE_CURRENCY_NAME + " WHERE " + CURRENCY_BASE + " = '" + name + "'";
-    }
 
     @Override
     public void onCreate(SQLiteDatabase mySQLiteDB) {
@@ -133,41 +98,6 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
-    }
-
-    public List<Exchange> loadAllHistory() {
-        List<Exchange> exchanges = new ArrayList<>();
-        try (SQLiteDatabase db = this.getReadableDatabase();) {
-            try (Cursor cursor = db.query(TABLE_EXCHANGE_NAME, null, null, null, null, null, null)) {
-                if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-
-                    //Находим индексы колонок
-                    int baseColId = cursor.getColumnIndex(EXCHANGE_BASE);
-                    int symbolsColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS);
-                    int amountFromColId = cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT);
-                    int amountToColId = cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT);
-                    int rateColId = cursor.getColumnIndex(EXCHANGE_RATE);
-                    int dateColId = cursor.getColumnIndex(EXCHANGE_DATE);
-                    int timeColId = cursor.getColumnIndex(EXCHANGE_TIME);
-                    int millisColId = cursor.getColumnIndex(EXCHANGE_MILLIS);
-
-                    do {
-                        String base = cursor.getString(baseColId);
-                        String symbols = cursor.getString(symbolsColId);
-                        double amountFrom = cursor.getDouble(amountFromColId);
-                        double amountTo = cursor.getDouble(amountToColId);
-                        double rate = cursor.getDouble(rateColId);
-                        String date = cursor.getString(dateColId);
-                        String time = cursor.getString(timeColId);
-                        long millis = cursor.getLong(millisColId);
-                        Log.d(TAG, time);
-                        exchanges.add(new Exchange(base, symbols, amountFrom, amountTo, rate, date, time, millis));
-
-                    } while (cursor.moveToNext());
-                }
-            }
-        }
-        return exchanges;
     }
 
     public List<Currency> loadAll() {
@@ -207,120 +137,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return currencies;
     }
-
-    public List<Currency> getFilteredCurrencies() {
-        List<Currency> currencies = new ArrayList<>();
-        Set<Currency> currenciesSet = new HashSet<>();
-        try (SQLiteDatabase db = this.getReadableDatabase();) {
-            try (Cursor cursor = db.rawQuery(GET_HISTORY, null)) {
-                if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                    do {
-                        String nameFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
-                        String nameTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
-                        currenciesSet.add(new Currency(nameTo));
-                        Log.d(TAG, "currency " + nameTo + "was added to Set");
-                        currenciesSet.add(new Currency(nameFrom));
-                        Log.d(TAG, "currency " + nameFrom + "was added to Set");
-                    } while (cursor.moveToNext());
-                }
-            } catch (SQLException e) {
-                Log.d(TAG, e.getMessage());
-            }
-
-            for (Currency currency: currenciesSet) {
-                try (Cursor cursor = db.rawQuery(getFilter(currency.getName()), null)) {
-                    if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                        int filter = cursor.getInt(cursor.getColumnIndex(FILTER));
-                        if (filter == 0) {
-                            currencies.add(new Currency(currency.getName(), false));
-                            Log.d(TAG, "currency " + currency.getName() + "was added to List with isFilter = false");
-                        } else {
-                            currencies.add(new Currency(currency.getName(), true));
-                            Log.d(TAG, "currency " + currency.getName() + "was added to List with isFilter = true");
-                        }
-                    }
-                } catch (SQLException e) {
-                    Log.d(TAG, e.getMessage());
-                }
-            }
-        } catch (SQLException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        return currencies;
-    }
-
-
-    public List<Exchange> getSortedExchangeHistory(Set<String> currencies) {
-        List<Exchange> exchanges = new ArrayList<>();
-        try (SQLiteDatabase db = this.getReadableDatabase();
-             Cursor cursor = db.rawQuery(getExchangeHistory(currencies), null)) {
-            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                do {
-                    String currencyFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
-                    String currencyTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
-                    double amountFrom = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT));
-                    double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
-                    String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
-                    String time = cursor.getString(cursor.getColumnIndex(EXCHANGE_TIME));
-                    long millis = cursor.getLong(cursor.getColumnIndex(EXCHANGE_MILLIS));
-                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time, millis));
-                    Log.d(TAG, currencyFrom + " " + currencyTo + " " + date);
-                } while (cursor.moveToNext());
-            }
-        } catch (SQLException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        return exchanges;
-    }
-
-    public List<Exchange> getSortedExchangeHistory(long dateFrom, long dateTo) {
-        List<Exchange> exchanges = new ArrayList<>();
-        try (SQLiteDatabase db = this.getReadableDatabase();
-             Cursor cursor = db.rawQuery(getExchangeHistory(dateFrom, dateTo), null)) {
-            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                do {
-                    String currencyFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
-                    String currencyTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
-                    double amountFrom = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT));
-                    double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
-                    String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
-                    String time = cursor.getString(cursor.getColumnIndex(EXCHANGE_TIME));
-                    long millis = cursor.getLong(cursor.getColumnIndex(EXCHANGE_MILLIS));
-                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time, millis));
-                    Log.d(TAG, currencyFrom + " " + currencyTo + " " + date);
-                } while (cursor.moveToNext());
-            }
-        } catch (SQLException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        return exchanges;
-    }
-
-    public List<Exchange> getSortedExchangeHistory(Set<String> currencies, long dateFrom, long dateTo) {
-        List<Exchange> exchanges = new ArrayList<>();
-        try (SQLiteDatabase db = this.getReadableDatabase();
-             Cursor cursor = db.rawQuery(getExchangeHistory(currencies, dateFrom, dateTo), null)) {
-            if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                do {
-                    String currencyFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
-                    String currencyTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));
-                    double amountFrom = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_BASE_AMOUNT));
-                    double amountTo = cursor.getDouble(cursor.getColumnIndex(EXCHANGE_SYMBOLS_AMOUNT));
-                    String date = cursor.getString(cursor.getColumnIndex(EXCHANGE_DATE));
-                    String time = cursor.getString(cursor.getColumnIndex(EXCHANGE_TIME));
-                    long millis = cursor.getLong(cursor.getColumnIndex(EXCHANGE_MILLIS));
-                    exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time, millis));
-                    Log.d(TAG, currencyFrom + " " + currencyTo + " " + millis);
-                } while (cursor.moveToNext());
-            }
-        } catch (SQLException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        return exchanges;
-    }
-
-
-
 
     //В конструктор передаем контекст, имя базы данных, CursorFactory (не используется, поэтому null), и версию базы данных
     public DBHelper (Context context) {

@@ -28,7 +28,7 @@ public interface ExchangeContract {
         void subscribeRate(String currencyFrom, String currencyTo);
         void unsubscribeRate();
         void getCurrenciesAndRate(Bundle bundle);
-        void sendExchange();
+        void onExchange();
     }
 
     interface Repository {

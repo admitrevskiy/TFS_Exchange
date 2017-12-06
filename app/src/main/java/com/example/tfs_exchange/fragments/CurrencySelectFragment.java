@@ -68,6 +68,7 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         mPresenter.getCurrencies();
 
         Log.d(TAG, " onCreateView" + this.hashCode());
+
         return firstFragmentRootView;
     }
 
@@ -76,10 +77,10 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
+                Log.d(TAG, "Currency item " + currency.getName() + " fave changed");
 
                 //Сообщаем презентеру, что у валюты нажата звездочка
                 mPresenter.onFavoriteChanged(currency);
-                Log.d(TAG, "Currency item " + currency.getName() + " fave changed");
             }
 
         }, new CurrencyRecyclerListAdapter.OnItemClickListener() {

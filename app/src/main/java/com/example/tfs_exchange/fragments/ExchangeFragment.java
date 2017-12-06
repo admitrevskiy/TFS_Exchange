@@ -23,13 +23,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
+import butterknife.Unbinder;
+
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.exchange.ExchangeContract;
 import com.example.tfs_exchange.exchange.ExchangePresenter;
 import com.example.tfs_exchange.model.Exchange;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by pusya on 01.11.17.
@@ -40,13 +39,12 @@ import java.util.Date;
 
 public class ExchangeFragment extends Fragment implements ExchangeContract.View {
     private static final String TAG = "ExchangeFragment";
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy '\n' HH:mm:ss");
+
 
     private String currencyFrom;
     private String currencyTo;
     private FragmentManager fragmentManager;
-
-    private long time;
+    private Unbinder unbinder;
 
     private static ExchangeContract.Presenter mPresenter;
 
@@ -86,7 +84,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     //Слушатель нажатия на кнопку из ButterKnife
     @OnClick(R.id.exchange_button)
     void onSaveClick() {
-        mPresenter.sendExchange();
+        mPresenter.onExchange();
         FragmentManager fm = getFragmentManager();
         fm.popBackStack();
         //showDialog();
@@ -103,7 +101,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View exchangeFragmentRootView = inflater.inflate(R.layout.exchange_fragment, container, false);
-        ButterKnife.bind(this, exchangeFragmentRootView);
+        unbinder = ButterKnife.bind(this, exchangeFragmentRootView);
         disactivateRate();
         mPresenter = new ExchangePresenter(this);
         mPresenter.getCurrenciesAndRate(getArguments());
@@ -150,13 +148,14 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     public void onDetach() {
         super.onDetach();
         mPresenter.unsubscribeRate();
+        unbinder.unbind();
         Log.d(TAG, "onDetach()");
     }
 
     @Override
     public void setCurrencies(String currencyFrom, String currencyTo)  {
-        this.currencyFrom = currencyFrom;
-        this.currencyTo = currencyTo;
+        //this.currencyFrom = currencyFrom;
+        //this.currencyTo = currencyTo;
         currencyFromName.setText(currencyFrom);
         currencyToName.setText(currencyTo);
     }
@@ -178,12 +177,9 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     @Override
     public Exchange getExchange() {
-        Date dateNow = new Date();
-        long millis = dateNow.getTime()/1000;
-        String[] dateAndTime = dateFormat.format(dateNow).split("\n");
         double amountFrom = Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText()));
         double amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
-        return new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, rate, dateAndTime[0], dateAndTime[1], millis);
+        return new Exchange(currencyFrom, currencyTo, amountFrom, amountTo);
     }
 
     public static class ExchangeDialogFragment extends DialogFragment {
@@ -205,7 +201,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mPresenter.sendExchange();
+                    mPresenter.onExchange();
                     Log.d(TAG, "OK");
                 }
             });

@@ -17,10 +17,12 @@ public interface HistoryContract {
     }
 
     interface Presenter {
-        void subscribeHistory();
+        void getHistory();
+        void onFilterButtonClicked();
     }
 
     interface View {
         void setAdapter(List<Exchange> exchanges);
+        void replaceByFilterFragment();
     }
 }

@@ -50,21 +50,12 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
 
     private static final String TAG = "HistoryFilterFragment";
 
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-
     private final String[] periods = {"все время", "неделя", "месяц", "выбрать"};
-    private int period;
 
-    private DBHelper dbHelper;
-    private ContentValues cv;
-    SQLiteDatabase db;
-    SharedPreferences settings;
     private CurrencyRecyclerListAdapter adapter;
     private List<Currency> currencies = new ArrayList<Currency>();
-    private Set<Currency> filterCurrencies = new HashSet<>();
-    private Set<String> savedCurrencies;
     private int mYear, mMonth, mDay;
-    private ToastHelper toastHelper;
+
     private HistoryFilterContract.Presenter mPresenter;
 
     @BindView(R.id.filter_recycler_view)
@@ -119,8 +110,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
 
         mPresenter = new HistoryFilterPresenter(this);
 
-        toastHelper = new ToastHelper();
-        settings = this.getActivity().getSharedPreferences(getString(R.string.preference_file), Context.MODE_PRIVATE);
+
 
         mPresenter.getCurrencies();
         //setAdapter(currencies);
@@ -130,16 +120,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
         saveFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPresenter.getAndSaveSettings();
-                getFragmentManager().popBackStack();
-                /**
-                getFilterCurrencies();
-                if (filterCurrencies.size() > 0)
-                {
-                    saveFilter();
-                    Log.d(TAG, "fab is clicked \n" + getFilterCurrencies().toString());
-                }
-                **/
+                mPresenter.onSaveSettings();
             }
         });
 
@@ -152,8 +133,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                setFaveToDB(currency);
-                //Log.d("Currency item ", " " + currency.getName() + " fave changed");
+                mPresenter.onCurrencyClicked(currency);
             }
         });
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -165,7 +145,8 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
 
     @Override
     public void setCurrencies(List<Currency> currencies) {
-        this.currencies = currencies;
+        //this.currencies = currencies;
+        adapter.notifyDataSetChanged();
     }
 
     private void setSpinner() {
@@ -197,23 +178,15 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
                 String item = (String)parent.getItemAtPosition(position);
                 switch (item) {
                     case "все время":
-                        period = 0;
-                        Log.d(TAG, "period " + period);
                         disableDate();
                         break;
                     case "неделя":
-                        period = 1;
-                        Log.d(TAG, "period " + period);
                         disableDate();
                         break;
                     case "месяц":
-                        period = 2;
-                        Log.d(TAG, "period " + period);
                         disableDate();
                         break;
                     case "выбрать":
-                        period = 3;
-                        Log.d(TAG, "period " + period);
                         enableDate();
                         break;
                 }
@@ -225,152 +198,6 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
         };
         periodSpinner.setOnItemSelectedListener(periodSelectedListener);
 
-    }
-
-
-
-    //Записываем в БД изменение избранности валюты
-    private void setFaveToDB(Currency currency) {
-        dbHelper = new DBHelper(getContext());
-        db = dbHelper.getWritableDatabase();
-        cv = new ContentValues();
-        int changeFilter;
-        if (currency.isFilter())
-        {
-            currency.setFilter(false);
-            changeFilter = 0;
-        } else {
-            currency.setFilter(true);
-            changeFilter = 1;
-        }
-        cv.put("FILTER", changeFilter);
-        db.update("currency_name", cv, "currency_base = ?", new String[] {currency.getName()});
-        Log.d(TAG, " " + currency.getName() + " filter changed" );
-        //sortCurrencies();
-        db.close();
-        adapter.notifyDataSetChanged();
-    }
-
-    private Set<String> getFilterCurrencies() {
-        savedCurrencies = new HashSet<>();
-        if (currencies.size() > 0) {
-            for (Currency currency : currencies) {
-                if (currency.isFilter()) {
-                    filterCurrencies.add(currency);
-                }
-            }
-        }
-
-        //Чтобы избежать ConcurrentModificationException приходится явно использовать итератор
-        for (Iterator<Currency> iterator = filterCurrencies.iterator(); iterator.hasNext();) {
-            Currency currency = iterator.next();
-            if (!currency.isFilter()) {
-                iterator.remove();
-            }
-        }
-
-        for (Iterator<Currency> iterator = filterCurrencies.iterator(); iterator.hasNext();) {
-            Currency currency = iterator.next();
-            savedCurrencies.add(currency.getName());
-        }
-        return savedCurrencies;
-    }
-
-    /**
-    protected void saveFilter() {
-        if (periodSpinner.getSelectedItemPosition() == 3 && (dateFromEdit.getText().equals(getString(R.string.date_from)) || dateToEdit.getText().equals(getString(R.string.date_to)))) {
-            toastHelper.showToast(getActivity(), getString(R.string.insert_date_message));
-        } else if (periodSpinner.getSelectedItemPosition() == 3 && dateFromEdit.getText().toString().compareTo(dateToEdit.getText().toString()) > 0) {
-            toastHelper.showToast(getActivity(), getString(R.string.wrong_date_message));
-        } else {
-            SharedPreferences.Editor editor = settings.edit();
-            editor.clear();
-            editor.putInt(getString(R.string.period_id), periodSpinner.getSelectedItemPosition());
-            if (savedCurrencies.size() > 0) {
-                editor.putStringSet(getString(R.string.currencies), savedCurrencies);
-            }
-            if (periodSpinner.getSelectedItemPosition() == 3) {
-                editor.putString(getString(R.string.saved_date_from), dateFromEdit.getText().toString());
-                editor.putString(getString(R.string.saved_date_to), dateToEdit.getText().toString());
-            }
-
-            editor.apply();
-            Log.d(TAG, "SharedPrefs was saved " + periodSpinner.getSelectedItemPosition() + " " + savedCurrencies.toString() + " " + dateFromEdit.getText().toString() + " " + dateToEdit.getText().toString());
-        }
-
-    }
-     **/
-
-    @Override
-    public Settings getSettings(){
-
-        Settings settings;
-        int periodId = periodSpinner.getSelectedItemPosition();
-        Set<String> savedCurrencies = getFilterCurrencies();
-        Date now = new Date (System.currentTimeMillis());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(now);
-
-        if (savedCurrencies.size() > 0) {
-            if (periodId == 0) {
-                 settings = new Settings(0, savedCurrencies);
-                Log.d(TAG, "saved: " + settings.toString());
-                 return settings;
-            } else if (periodId == 1) {
-                calendar.add(Calendar.DATE, -7);
-                settings =  new Settings(1, savedCurrencies, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
-                Log.d(TAG, "saved: " + settings.toString());
-                return settings;
-            } else if (periodId == 2) {
-                calendar.add(Calendar.MONTH, -1);
-                settings = new Settings(2, savedCurrencies, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
-                Log.d(TAG, "saved: " + settings.toString());
-                return settings;
-
-            } else {
-                try {
-                    Date dateFrom = dateFormat.parse(dateFromEdit.getText().toString());
-                    Date dateTo = dateFormat.parse(dateToEdit.getText().toString());
-                    long dateFromMillis = dateFrom.getTime()/1000;
-                    long dateToMillis = dateTo.getTime()/1000;
-                    settings =  new Settings(3, savedCurrencies, dateFromMillis, dateToMillis);
-                    Log.d(TAG, "saved: " + settings.toString());
-                    return settings;
-                } catch (ParseException e) {
-                    Log.d(TAG, "ParseException" + e.getMessage());
-                    return null;
-                }
-            }
-        } else {
-                if (periodId == 0) {
-                    settings =  new Settings(0);
-                    Log.d(TAG, "saved: " + settings.toString());
-                    return settings;
-                } else if (periodId == 1) {
-                    calendar.add(Calendar.DATE, -7);
-                    settings =  new Settings(1, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
-                    Log.d(TAG, "saved: " + settings.toString());
-                    return settings;
-                } else if (periodId == 2) {
-                    calendar.add(Calendar.MONTH, -1);
-                    settings =  new Settings(2, calendar.getTimeInMillis()/1000, System.currentTimeMillis()/1000);
-                    Log.d(TAG, "saved: " + settings.toString());
-                    return settings;
-                } else {
-                    try {
-                        Date dateFrom = dateFormat.parse(dateFromEdit.getText().toString());
-                        Date dateTo = dateFormat.parse(dateToEdit.getText().toString());
-                        long dateFromMillis = dateFrom.getTime()/1000;
-                        long dateToMillis = dateTo.getTime()/1000;
-                        settings =  new Settings(3, dateFromMillis, dateToMillis);
-                        Log.d(TAG, "saved: " + settings.toString());
-                        return settings;
-                    } catch (ParseException e) {
-                        Log.d(TAG, "ParseException" + e.getMessage());
-                        return null;
-                    }
-                }
-        }
     }
 
     private void callDatePicker(TextView textView) {
@@ -388,4 +215,25 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
                 }, mYear, mMonth, mDay);
         datePickerDialog.show();
     }
+
+    @Override
+    public int getPeriodId() {
+        return periodSpinner.getSelectedItemPosition();
+    }
+
+    @Override
+    public String getDateFrom() {
+        return dateFromEdit.getText().toString();
+    }
+
+    @Override
+    public String getDateTo() {
+       return dateToEdit.getText().toString();
+    }
+
+    @Override
+    public void popBackStack() {
+        getFragmentManager().popBackStack();
+    }
 }
+
