@@ -15,6 +15,7 @@ import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Settings;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,19 +53,50 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
     //Ресурсы нужны для доступа к строкам из values/strings
     private SharedPreferences sharedPreferences;
     private Context context = ExchangerApp.getContext();
-    Resources resources = ExchangerApp.getAppResources();
+    private Resources resources = ExchangerApp.getAppResources();
+
     private ContentValues cv;
 
+    //Фильтр
+    private int periodFilter;
+    private long dateFromMillis, dateToMillis;
 
+    @Override
+    public int getPeriodFilter() {
+        sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
+        if (sharedPreferences.contains(resources.getString(R.string.period_id))) {
+            periodFilter = sharedPreferences.getInt(resources.getString(R.string.period_id), 0);
+            Log.d(TAG, "Period ID: " + String.valueOf(periodFilter));
+            return periodFilter;
+        } else {
+            Log.d(TAG, "no period filter");
+            return 0;
+        }
+    }
 
-
+    @Override
+    public long[] getDates() {
+        long[] dates = new long[2];
+        sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
+        if (sharedPreferences.contains(resources.getString((R.string.saved_date_from)))) {
+            dateFromMillis = sharedPreferences.getLong(resources.getString(R.string.saved_date_from), 0);
+            Log.d(TAG, "DateFrom: " + dateFromMillis);
+        }
+        if (sharedPreferences.contains(resources.getString((R.string.saved_date_to)))) {
+            dateToMillis = sharedPreferences.getLong(resources.getString(R.string.saved_date_to), 0);
+            Log.d(TAG, "DateTo: " + dateToMillis);
+        }
+        dates[0] = dateFromMillis;
+        dates[1] = dateToMillis;
+        return dates;
+    }
 
 
 
     @Override
     public Observable<List<Currency>> loadCurrencies() {
         return Observable
-                .just(/**dbHelper.getFilteredCurrencies()**/getExchangedCurrencies())
+                .just(getExchangedCurrencies())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -104,6 +136,11 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
             Log.d(TAG, " " + currencyName + " filter changed" );
         }
 
+    }
+
+    @Override
+    public String[] getStrings() {
+        return new String[] {resources.getString(R.string.all_time), resources.getString(R.string.week), resources.getString(R.string.month), resources.getString(R.string.custom)};
     }
 
     private List<Currency> getExchangedCurrencies() {

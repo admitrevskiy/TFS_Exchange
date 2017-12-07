@@ -1,6 +1,7 @@
 package com.example.tfs_exchange.history_filter;
 
 import android.util.Log;
+import android.widget.TextView;
 
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Settings;
@@ -8,6 +9,7 @@ import com.example.tfs_exchange.model.Settings;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +27,7 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
 
     private HistoryFilterContract.View mView;
     private HistoryFilterContract.Repository mRepository;
-
+    private int mYear, mMonth, mDay;
     private List<Currency> currencies;
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
@@ -51,6 +53,21 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
             this.currencies = currencies;
             mView.setAdapter(currencies);
             mView.setCurrencies(currencies);
+        }
+    }
+
+    @Override
+    public void setSettings() {
+        String[] periods = mRepository.getStrings();
+        int periodId = mRepository.getPeriodFilter();
+        if (periodId != 3) {
+            mView.setTimeSettings(periodId, null, null, periods);
+        } else {
+            long[] dates = mRepository.getDates();
+            Log.d(TAG, dates[0] + " " + dates[1]);
+            String dateFrom = dateFormat.format(dates[0]*1000);
+            String dateTo = dateFormat.format(dates[1]*1000);
+            mView.setTimeSettings(periodId, dateFrom, dateTo, periods);
         }
     }
 
@@ -103,6 +120,16 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
             }
         }
         return settings;
+    }
+
+    @Override
+    public void onChangeDate(TextView textView) {
+        // получаем текущую дату
+        final Calendar calendar = Calendar.getInstance();
+        mYear = calendar.get(Calendar.YEAR);
+        mMonth = calendar.get(Calendar.MONTH);
+        mDay = calendar.get(Calendar.DAY_OF_MONTH);
+        mView.callDatePicker(textView, mYear, mMonth, mDay);
     }
 
 }

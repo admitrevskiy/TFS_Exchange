@@ -10,4 +10,8 @@
     <string name="wrong_date_message">Дата конца меньше, чем дата начала</string>
     <string name="saved_date_from">date_from</string>
     <string name="saved_date_to">date_to</string>
+    <string name="all_time">все время</string>
+    <string name="week">неделя</string>
+    <string name="month">месяц</string>
+    <string name="custom">выбрать</string>
 </resources>
