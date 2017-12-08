@@ -161,25 +161,18 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     }
 
     @Override
-    public String getAmountFrom() {
-        return currencyAmountFromEdit.getText().toString();
+    public double getAmountFrom() {
+        return Double.parseDouble(currencyAmountFromEdit.getText().toString());
     }
 
     @Override
-    public String getAmountTo () {
-        return currencyAmountToEdit.getText().toString();
+    public double getAmountTo () {
+        return Double.parseDouble(currencyAmountToEdit.getText().toString());
     }
 
     @Override
     public void setRate(double rate) {
         this.rate = rate;
-    }
-
-    @Override
-    public Exchange getExchange() {
-        double amountFrom = Double.parseDouble(String.valueOf(currencyAmountFromEdit.getText()));
-        double amountTo = Double.parseDouble(String.valueOf(currencyAmountToEdit.getText()));
-        return new Exchange(currencyFrom, currencyTo, amountFrom, amountTo);
     }
 
     public static class ExchangeDialogFragment extends DialogFragment {

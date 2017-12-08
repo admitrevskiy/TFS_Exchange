@@ -20,10 +20,9 @@ import io.reactivex.disposables.Disposable;
 
 public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
-    //Тэг
+
     private static final String TAG = "CurrencySelectPresenter";
 
-    //MVP
     private final CurrencyContract.Repository mRepository;
     private final CurrencyContract.View mView;
 

@@ -37,7 +37,7 @@ public class CurrencyRepository implements CurrencyContract.Repository {
     private static final String FAVORITE = "favorite";
 
     //SQL команда для загрузки всех валют из базы
-    private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC";
+    private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME; //+ " ORDER BY " + LAST_USED + " DESC, " + FAVORITE + " DESC";
 
     @Override
     public Observable<List<Currency>> loadCurrencies() {
@@ -79,9 +79,9 @@ public class CurrencyRepository implements CurrencyContract.Repository {
             try (Cursor cursor = db.rawQuery(GET_ALL_CURRENCIES, null);) {
                 if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                     //Находим индексы колонок
-                    int baseColId = cursor.getColumnIndex("currency_base");
-                    int lastUsedColId = cursor.getColumnIndex("last_used");
-                    int favoriteColId = cursor.getColumnIndex("favorite");
+                    int baseColId = cursor.getColumnIndex(CURRENCY_BASE);
+                    int lastUsedColId = cursor.getColumnIndex(LAST_USED);
+                    int favoriteColId = cursor.getColumnIndex(FAVORITE);
 
                     do {
                         //Создаем объект типа Currency и присваиваем ему значения из БД
@@ -106,6 +106,7 @@ public class CurrencyRepository implements CurrencyContract.Repository {
                 }
             }
         }
+        Log.d(TAG, "For " + GET_ALL_CURRENCIES + ": " + currencies.toString());
         return currencies;
     }
 }

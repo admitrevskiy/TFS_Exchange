@@ -18,10 +18,9 @@ public interface ExchangeContract {
         void disactivateRate();
         void setCurrencies(String currencyFrom, String currencyTo);
         void setRate(double rate);
-        Exchange getExchange();
         void showDialog(String message);
-        String getAmountFrom();
-        String getAmountTo();
+        double getAmountFrom();
+        double getAmountTo();
     }
 
     interface Presenter {

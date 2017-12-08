@@ -1,5 +1,7 @@
 package com.example.tfs_exchange.analytics;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.example.tfs_exchange.api.FixerApi;
@@ -34,17 +36,25 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
     private LastUsedComparator lastUsedComp = new LastUsedComparator();
     private FavoriteComparator faveComp = new FavoriteComparator();
 
-    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    private DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     private DBHelper dbHelper = DBHelper.getInstance();
+    private static final String TABLE_CURRENCY_NAME = "currency_name";
+    private static final String CURRENCY_BASE = "currency_base";
+    private static final String LAST_USED = "last_used";
+    private static final String FAVORITE = "favorite";
+    private static final String FILTER = "filter";
+
+    private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC, " + FAVORITE;
 
     @Override
     public Observable<List<Currency>> loadCurrencies() {
         return Observable
-                .just(dbHelper.loadAll())
+                .just(loadAll())
                 .subscribeOn(Schedulers.io())
-                .map(dates -> {
-                    sortCurrencies(dates);
-                    return dates;
+                .map(currencies -> {
+                    sortCurrencies(currencies);
+
+                    return currencies;
                 })
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -71,6 +81,7 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
     }
 
 
+
     private String[] generateDates(int days) {
         String[] dates  = new String[days];
 
@@ -86,5 +97,44 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
         }
 
         return dates;
+    }
+
+    public List<Currency> loadAll() {
+        List<Currency> currencies = new ArrayList<>();
+        Currency currency;
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();) {
+            try (Cursor cursor = db.rawQuery(GET_ALL_CURRENCIES, null);) {
+                if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+                    //Находим индексы колонок
+                    int baseColId = cursor.getColumnIndex(CURRENCY_BASE);
+                    int lastUsedColId = cursor.getColumnIndex(LAST_USED);
+                    int favoriteColId = cursor.getColumnIndex(FAVORITE);
+
+                    do {
+                        //Создаем объект типа Currency и присваиваем ему значения из БД
+                        currency = new Currency();
+                        currency.setName(cursor.getString(baseColId));
+                        currency.setLastUse(cursor.getInt(lastUsedColId));
+                        int favorite = cursor.getInt(favoriteColId);
+
+                        //В SQLite нет типа boolean, поэтому НЕ избранные валюты имеют в колонке favorite 0, а избранные 1
+                        if (favorite == 0) {
+                            currencies.add(currency);
+                            currency.setFavorite(false);
+                            Log.d(TAG, " " + currency.getName() + " was added, last use: " + currency.getLastUse());
+                        } else {
+                            currencies.add(0, currency);
+                            currency.setFavorite(true);
+                        }
+
+                        //Добавляем валюту в List с валютами
+
+                    } while (cursor.moveToNext());
+                }
+                //sortCurrencies();
+            }
+        }
+        Log.d(TAG, "For " + GET_ALL_CURRENCIES + ": " + currencies.toString());
+        return currencies;
     }
 }

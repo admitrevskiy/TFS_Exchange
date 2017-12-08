@@ -88,14 +88,14 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
             Date time = new Date();
             long millis = time.getTime()/1000;
             String[] dateAndTime = dateFormat.format(time).split("\n");
-            Exchange exchange = mView.getExchange();
+            Exchange exchange = new Exchange(currencyFrom, currencyTo, mView.getAmountFrom(), mView.getAmountTo());
             exchange.setDate(dateAndTime[0]);
             exchange.setTime(dateAndTime[1]);
             exchange.setMillis(time.getTime()/1000);
             mRepository.setExchangeToDB(exchange);
         } else {
             try {
-                amountFrom = Double.parseDouble(mView.getAmountFrom());
+                amountFrom = mView.getAmountFrom();
                 time = now;
                 rateSubscription =
                         mRepository.loadRate(currencyFrom, currencyTo)

@@ -68,8 +68,8 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
 
         mPresenter = new HistoryFilterPresenter(this);
         mPresenter.getCurrencies();
-
         mPresenter.setSettings();
+
         saveFilter.setOnClickListener(v -> mPresenter.onSaveSettings());
 
         Log.d(TAG, " onCreateView" + this.hashCode());

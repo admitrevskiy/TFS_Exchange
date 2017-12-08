@@ -81,25 +81,27 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         ButterKnife.bind(this, analyticsFragmentRootView);
         mPresenter = new AnalyticsPresenter(this);
         mPresenter.getCurrencies();
-        mPresenter.getRates(days, "RUB");
+
+        //mPresenter.getRates("RUB");
 
         choosePeriodGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
                     case R.id.week_button:
-                        Log.d(TAG, "week for " + selectedCurrency.getName());
                         days = 7;
-                        mPresenter.getRates(days, selectedCurrency.getName());
+                        Log.d(TAG, "week for " + selectedCurrency.getName());
+                        mPresenter.getRates(selectedCurrency.getName());
+                        //mPresenter.getRates(7, selectedCurrency.getName());
                         break;
                     case R.id.two_weeks_button:
                         days = 14;
-                        mPresenter.getRates(days, selectedCurrency.getName());
+                        mPresenter.getRates(selectedCurrency.getName());
                         Log.d(TAG, "2 weeks for " + selectedCurrency.getName());
                         break;
                     case R.id.month_button:
                         days = 30;
-                        mPresenter.getRates(days, selectedCurrency.getName());
+                        mPresenter.getRates(selectedCurrency.getName());
                         Log.d(TAG, "month for " + selectedCurrency.getName());
                         break;
                     default:
@@ -123,8 +125,9 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                setFavorite(currency);
-                mPresenter.getRates(days, currency.getName());
+                //selectedCurrency = currency;
+                mPresenter.setFavorite(currency);
+                mPresenter.getRates(currency.getName());
                 Log.d(TAG, currency.getName() + " was clicked");
             }
         });
@@ -138,6 +141,11 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     @Override
     public Currency getSelectedCurrency() {
         return selectedCurrency;
+    }
+
+    @Override
+    public int getDays() {
+        return days;
     }
 
     @Override
@@ -156,34 +164,26 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     }
 
     @Override
+    public void refreshCurrencyList(Currency currency, List<Currency> currencies) {
+        this.currencies = currencies;
+        selectedCurrency = currency;
+        adapter.notifyDataSetChanged();
+    }
+
+
+    @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
     }
 
     @Override
-    public void plotGraph(ArrayList<Float> list) {
+    public void plotGraph(LineGraphSeries<DataPoint> series) {
         graph.removeAllSeries();
-        DataPoint[] dataPoints = new DataPoint[list.size()];
-        String[] dates  = new String[days];
-
-        Calendar calendar = Calendar.getInstance();
-
-        Date today = calendar.getTime();
-        for (int i = 0; i < list.size(); i++) {
-            dataPoints[i] = new DataPoint(i+1, (double) list.get(i));
-            calendar.add(Calendar.DATE, -1);
-            today = calendar.getTime();
-            Log.d(TAG, "Plotting " + dataPoints.toString());
-        }
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
-
         graph.addSeries(series);
         graph.getViewport().setMinX(1);
         graph.getViewport().setMaxX(days);
         graph.onDataChanged(false, false);
-
-
         graph.getViewport().setScalable(true);
         graph.getViewport().setScrollable(true);
     }
