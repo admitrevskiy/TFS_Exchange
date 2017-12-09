@@ -61,6 +61,7 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
     private int periodFilter;
     private long dateFromMillis, dateToMillis;
 
+    //Получаем фильтр для периода времени
     @Override
     public int getPeriodFilter() {
         sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
@@ -74,6 +75,7 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
         }
     }
 
+    //Получаем дату начала и дату конца фильтрации
     @Override
     public long[] getDates() {
         long[] dates = new long[2];
@@ -91,8 +93,7 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
         return dates;
     }
 
-
-
+    //Загружаем доступный список валют
     @Override
     public Observable<List<Currency>> loadCurrencies() {
         return Observable
@@ -101,6 +102,7 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    //Сохраняем настройки, полученные от презентера в shared preferences
     @Override
     public void saveSettings(Settings settings) {
         sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
@@ -127,6 +129,7 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
         editor.apply();
     }
 
+    //Сохраняем валюты как необходимые при сортировке
     @Override
     public void setFilterToDB(String currencyName, int filter) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
@@ -135,14 +138,15 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
             db.update(TABLE_CURRENCY_NAME, cv, CURRENCY_BASE + " = ?", new String[] {currencyName});
             Log.d(TAG, " " + currencyName + " filter changed" );
         }
-
     }
 
+    //Список строк для выпадающего списка
     @Override
     public String[] getStrings() {
         return new String[] {resources.getString(R.string.all_time), resources.getString(R.string.week), resources.getString(R.string.month), resources.getString(R.string.custom)};
     }
 
+    //Получаем из БД список валют, с которыми был совершен обмен
     private List<Currency> getExchangedCurrencies() {
         Log.d(TAG, "currencies loading ");
         List<Currency> currencies = new ArrayList<>();

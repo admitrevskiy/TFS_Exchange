@@ -18,30 +18,32 @@ public class HistoryPresenter implements HistoryContract.Presenter {
 
     private static final String TAG = "HistoryPresenter";
 
+    //MVP
     private HistoryContract.View mView;
-    private HistoryContract.Repository mRepostory;
+    private HistoryContract.Repository mRepository;
 
-    private List<Exchange> exchanges;
-
+    //Конструктор
     public HistoryPresenter(HistoryContract.View mView) {
         this.mView = mView;
-        mRepostory = new HistoryRepository();
+        mRepository = new HistoryRepository();
     }
 
+    //Загружаем валюты
     @Override
     public void getHistory() {
-        exchanges = new ArrayList<>();
-        Disposable historySubscription = mRepostory.loadHistory()
+        Disposable historySubscription = mRepository.loadHistory()
                 .subscribe(this::showHistory, throwable -> {
                     Log.d(TAG, "problems, bro");
                 });
     }
 
+    //Открываем фрагмент с фильтрами
     @Override
     public void onFilterButtonClicked() {
         mView.replaceByFilterFragment();
     }
 
+    //Передаем список обменов view
     private void showHistory(List<Exchange> exchanges) {
         mView.setAdapter(exchanges);
     }

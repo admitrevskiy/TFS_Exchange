@@ -23,11 +23,7 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -41,12 +37,10 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     private final static String TAG = "AnalyticsFragment";
 
-    private Currency selectedCurrency;
     private CurrencyRecyclerListAdapter adapter;
 
     private AnalyticsContract.Presenter mPresenter;
 
-    private List<Currency> currencies = new ArrayList<Currency>();
 
     private int days = 7;
 
@@ -82,27 +76,21 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         mPresenter = new AnalyticsPresenter(this);
         mPresenter.getCurrencies();
 
-        //mPresenter.getRates("RUB");
-
         choosePeriodGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
                     case R.id.week_button:
                         days = 7;
-                        Log.d(TAG, "week for " + selectedCurrency.getName());
-                        mPresenter.getRates(selectedCurrency.getName());
-                        //mPresenter.getRates(7, selectedCurrency.getName());
+                        mPresenter.onPeriodChanged();
                         break;
                     case R.id.two_weeks_button:
                         days = 14;
-                        mPresenter.getRates(selectedCurrency.getName());
-                        Log.d(TAG, "2 weeks for " + selectedCurrency.getName());
+                        mPresenter.onPeriodChanged();
                         break;
                     case R.id.month_button:
                         days = 30;
-                        mPresenter.getRates(selectedCurrency.getName());
-                        Log.d(TAG, "month for " + selectedCurrency.getName());
+                        mPresenter.onPeriodChanged();
                         break;
                     default:
                         break;
@@ -115,19 +103,13 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     }
 
-    private void setCurrencies(List<Currency> currencies) {
-        this.currencies = currencies;
-    }
-
     @Override
     public void setAdapter(List<Currency> currencies) {
-        setCurrencies(currencies);
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
-                //selectedCurrency = currency;
                 mPresenter.setFavorite(currency);
-                mPresenter.getRates(currency.getName());
+                mPresenter.getRates();
                 Log.d(TAG, currency.getName() + " was clicked");
             }
         });
@@ -139,34 +121,12 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     }
 
     @Override
-    public Currency getSelectedCurrency() {
-        return selectedCurrency;
-    }
-
-    @Override
     public int getDays() {
         return days;
     }
 
     @Override
-    public void setFavorite(Currency currency) {
-       for (Currency curr: currencies) {
-           if (!curr.isFilter()) {
-
-           } else {
-               curr.setFilter(false);
-           }
-       }
-        currency.setFilter(true);
-        selectedCurrency = currency;
-        Log.d(TAG, "selected currency: " + selectedCurrency.getName());
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void refreshCurrencyList(Currency currency, List<Currency> currencies) {
-        this.currencies = currencies;
-        selectedCurrency = currency;
+    public void refreshCurrencyList(List<Currency> currencies) {
         adapter.notifyDataSetChanged();
     }
 

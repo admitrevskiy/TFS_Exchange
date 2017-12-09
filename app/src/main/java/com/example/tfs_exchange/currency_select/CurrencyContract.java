@@ -20,9 +20,7 @@ public interface CurrencyContract {
     interface Presenter {
         void getCurrencies();
         void showCurrencies(List<Currency> currencies);
-        //String getCurrencyForExchange(Currency selectedCurrency);
         void onFavoriteChanged(Currency currency);
-        //void onTimeChanged(Currency currency);
         void onCurrencyLongClicked(Currency currency);
         void onCurrencyClicked(Currency currency);
     }

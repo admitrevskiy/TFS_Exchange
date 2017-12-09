@@ -250,6 +250,7 @@ public class HistoryRepository implements HistoryContract.Repository {
         return exchanges;
     }
 
+    //Вынес работу с курсором в отдельный метод, чтобы не писать много раз
     private void cursorWork(Cursor cursor, List<Exchange> exchanges) {
         String currencyFrom = cursor.getString(cursor.getColumnIndex(EXCHANGE_BASE));
         String currencyTo = cursor.getString(cursor.getColumnIndex(EXCHANGE_SYMBOLS));

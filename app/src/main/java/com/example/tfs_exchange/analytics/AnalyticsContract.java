@@ -18,7 +18,7 @@ import io.reactivex.Single;
 public interface AnalyticsContract {
     interface Presenter {
         void getCurrencies();
-        void getRates(String currencyName);
+        void getRates();
         void setFavorite(Currency currenc);
         void onPeriodChanged();
 
@@ -28,9 +28,7 @@ public interface AnalyticsContract {
         void setAdapter(List<Currency> currencies);
         void plotGraph(LineGraphSeries<DataPoint> series);
         void refreshGraph();
-        void refreshCurrencyList(Currency currencyy, List<Currency> currencies);
-        void setFavorite(Currency currency);
-        Currency getSelectedCurrency();
+        void refreshCurrencyList(List<Currency> currencies);
         int getDays();
 
     }

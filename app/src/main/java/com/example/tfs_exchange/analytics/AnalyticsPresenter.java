@@ -4,16 +4,11 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 
-import com.example.tfs_exchange.comparators.FavoriteComparator;
-import com.example.tfs_exchange.comparators.LastUsedComparator;
 import com.example.tfs_exchange.model.Currency;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
-
-import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 
 /**
@@ -23,58 +18,67 @@ import io.reactivex.disposables.Disposable;
 public class AnalyticsPresenter implements AnalyticsContract.Presenter {
 
     private static final String TAG = "AnalyticsPresenter";
+
+    //Валюты
     private List<com.example.tfs_exchange.model.Currency> currencies;
+    private Currency selectedCurrency;
+
+
     private int days = 7;
+
+    //MVP
     private AnalyticsContract.View mView;
     private AnalyticsContract.Repository mRepository;
-    //Компараторы
-    private FavoriteComparator faveComp = new FavoriteComparator();
-    private LastUsedComparator lastUsedComp = new LastUsedComparator();
+
+
+    //Конструктор
     public AnalyticsPresenter(AnalyticsContract.View mView) {
         this.mRepository = new AnalyticsRepository();;
         this.mView = mView;
     }
-    private Currency selectedCurrency;
 
+    //Загружаем валюты из БД и передаём view на отрисовку
     @Override
     public void getCurrencies() {
         currencies = new ArrayList<>();
         Disposable currencySubscription = mRepository.loadCurrencies()
                 .subscribe(this::showCurrencies, throwable -> {
                     //getCurrencies();
-                    Log.d(TAG, "problems, bro");
+                    Log.d(TAG, "problems with loading currencies bro");
                 });
     }
 
+    //Загружаем историю курсов с сервера и передаём view на отрисовку
     @Override
-    public void getRates(/**int days**/ String currencyName) {
-        Disposable ratesSubscription = mRepository.loadRates(days, currencyName)
+    public void getRates() {
+        Disposable ratesSubscription = mRepository.loadRates(days, selectedCurrency.getName())
                 .subscribe(this::showRates, throwable -> {
-                    Log.d(TAG, "problems, bro");
+                    Log.d(TAG, "problems with loading rates bro");
                 });
     }
 
+    //Изменился период на view
     @Override
     public void onPeriodChanged() {
         days = mView.getDays();
-        //String currencyName = mView.getSelectedCurrency().getName();
-        getRates(selectedCurrency.getName());
-        //days = mView.getDays();
+        Log.d(TAG, days + " days for " + selectedCurrency.getName());
+        getRates();
     }
 
-
-    private void showCurrencies(List<com.example.tfs_exchange.model.Currency> currencies) {
+    //Передаём view список валют на отрисовку
+    private void showCurrencies(List<Currency> currencies) {
+        this.currencies = currencies;
         Log.d(TAG, currencies.toString());
         selectedCurrency = currencies.get(0);
-        getRates(selectedCurrency.getName());
-        sortCurrencies(currencies);
+        selectedCurrency.setFilter(true);
+        Log.d(TAG, "selected one: " + selectedCurrency.getName());
+        getRates();
         mView.setAdapter(currencies);
     }
 
+     //Полученный список курсов переводим в LineGraphSeries (com.jjoe64.graphview.series.LineGraphSeries) и отдаём view на отрисовку
     private void showRates(ArrayList<Float> list) {
         DataPoint[] dataPoints = new DataPoint[list.size()];
-        //String[] dates  = new String[days];
-
         Calendar calendar = Calendar.getInstance();
 
         for (int i = 0; i < list.size(); i++) {
@@ -87,16 +91,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
         mView.plotGraph(series);
     }
 
-    //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
-    private void sortCurrencies(List<Currency> currencies) {
-        Collections.sort(currencies, lastUsedComp);
-        Collections.sort(currencies, faveComp);
-        //mView.setAdapter(currencies);
-        //mView.setCurrencies(currencies);
-        Log.d(TAG, " sortCurrencies");
-        Log.d(TAG, currencies.toString());
-    }
-
+    //Выбираем избранную валюту для получения данных с сервера
     @Override
     public void setFavorite(Currency currency) {
         for (Currency curr: currencies) {
@@ -109,7 +104,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
         currency.setFilter(true);
         selectedCurrency = currency;
         Log.d(TAG, "selected currency: " + selectedCurrency.getName());
-        mView.refreshCurrencyList(currency, currencies);
-        //adapter.notifyDataSetChanged();
+        mView.refreshCurrencyList(currencies);
+
     }
 }

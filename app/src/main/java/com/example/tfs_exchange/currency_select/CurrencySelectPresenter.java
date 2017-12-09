@@ -23,6 +23,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
     private static final String TAG = "CurrencySelectPresenter";
 
+    //MVP
     private final CurrencyContract.Repository mRepository;
     private final CurrencyContract.View mView;
 

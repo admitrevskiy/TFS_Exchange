@@ -154,8 +154,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     @Override
     public void setCurrencies(String currencyFrom, String currencyTo)  {
-        //this.currencyFrom = currencyFrom;
-        //this.currencyTo = currencyTo;
         currencyFromName.setText(currencyFrom);
         currencyToName.setText(currencyTo);
     }

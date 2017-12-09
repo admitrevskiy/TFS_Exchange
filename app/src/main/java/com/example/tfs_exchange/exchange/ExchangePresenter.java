@@ -21,24 +21,29 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
 
     private static final String TAG = "ExchangePresenter";
 
+    //MVP
     private ExchangeContract.View mView;
     private ExchangeContract.Repository mRepository;
+
+    //Примитивы и списки
     private long time;
-    private Disposable rateSubscription;
     private String currencyFrom, currencyTo;
     private double amountFrom;
-
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy '\n' HH:mm:ss");
-
     private double rate;
 
+    //Rx
+    private Disposable rateSubscription;
+
+    //Формат даты
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy '\n' HH:mm:ss");
+
+    //Конструктор
     public ExchangePresenter(ExchangeContract.View mView) {
         this.mView = mView;
         this.mRepository = new ExchangeRepository();
     }
 
-    /** перенести в REPOSITORY **/
-
+    //Получаем курс и передаем его view на отрисовку
     @Override
     public void subscribeRate(String currencyFrom, String currencyTo) {
         time = new Date().getTime();
@@ -59,31 +64,34 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
         Log.d(TAG, "Subscribe");
     }
 
+    //Отписка
     @Override
     public void unsubscribeRate() {
         if (rateSubscription != null) rateSubscription.dispose();
         Log.d(TAG, "unsubscribe from rate");
     }
 
+    //Достаём из бандла имена валют от предыдущего фрагмента и получаем курс
     @Override
     public void getCurrenciesAndRate(Bundle bundle) {
         if (bundle!= null) {
             currencyFrom = bundle.getStringArray("currencies")[0];
             currencyTo = bundle.getStringArray("currencies")[1];
-
             mView.setCurrencies(currencyFrom, currencyTo);
-
             subscribeRate(currencyFrom, currencyTo);
         } else {
             Log.d(TAG, "problems, bro");
         }
     }
 
-
+    //Нажата кнопка "Обменять"
+    //Проверяем, сколько прошло времени
+    //Если меньше 5 мин - пишем в базу
+    //Если больше - получаем обновленный курс и предлагаем записатьа
     @Override
     public void onExchange() {
         long now = new Date().getTime();
-        if (now - time < 5000) {
+        if (now - time < 5*60*1000) {
             Log.d(TAG, "time is Ok");
             Date time = new Date();
             long millis = time.getTime()/1000;
@@ -107,7 +115,6 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
                             } else {
                                 Log.d(TAG, " some problems with loading new rate");
                             }
-
                         }, throwable -> {
                             Log.d(TAG, " connection problems");
                             mView.disactivateRate();
@@ -116,8 +123,6 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
             } catch (Exception e) {
                 Log.d(TAG, "trouble with new subscription");
             }
-
         }
-
     }
 }

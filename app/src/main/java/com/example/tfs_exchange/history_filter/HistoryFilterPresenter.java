@@ -25,19 +25,26 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
 
     private static final String TAG = "HistoryFilterPresenter";
 
+    //MVP
     private HistoryFilterContract.View mView;
     private HistoryFilterContract.Repository mRepository;
+
+    //Примитивы
     private int mYear, mMonth, mDay;
+
+    //Валюты
     private List<Currency> currencies;
 
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+    //Формат даты
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
+    //Конструктор
     public  HistoryFilterPresenter(HistoryFilterContract.View mView) {
         this.mView = mView;
         this.mRepository = new HistoryFilterRepository();
     }
 
-
+    //Загружаем список валют, с которыми был совершен обмен и перадем view
     @Override
     public void getCurrencies() {
         currencies = new ArrayList<>();
@@ -47,6 +54,7 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
                 });
     }
 
+    //Передаем view список валют для отрисовки
     @Override
     public void showCurrencies(List<Currency> currencies) {
         if (currencies != null) {
@@ -56,6 +64,7 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         }
     }
 
+    //Получаем сохраненные настроки и в соответствии с ними отрисовываем view
     @Override
     public void setSettings() {
         String[] periods = mRepository.getStrings();
@@ -71,12 +80,14 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         }
     }
 
+    //Нажата кнопка "сохранить настройки", передаем настройи репозиторию, возвращаемся к фрагменту истории
     @Override
     public void onSaveSettings(){
         mRepository.saveSettings(getSettings());
         mView.popBackStack();
     }
 
+    //Валюта нажата и ее нужно будет записать в настройки
     @Override
     public void onCurrencyClicked(Currency currency) {
         Log.d(TAG, currency.getName() + " was clicked");
@@ -95,6 +106,7 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         mView.setCurrencies(currencies);
     }
 
+    //Получаем выбранные настройи из view
     private Settings getSettings() {
         Settings settings = new Settings();
         Set<String> currencyFilter = new HashSet<>();
@@ -122,6 +134,7 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         return settings;
     }
 
+    //Нажато поле для выбора даты
     @Override
     public void onChangeDate(TextView textView) {
         // получаем текущую дату
