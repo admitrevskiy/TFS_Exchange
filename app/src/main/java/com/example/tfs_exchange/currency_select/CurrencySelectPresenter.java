@@ -100,11 +100,11 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
     //
     private void onTimeChanged(Currency currency) {
         //Получаем настоящее время и присваиваем валюте
-        long time = new Date().getTime()/1000;
-        currency.setLastUse(time);
+        //long time = new Date().getTime()/1000;
+        //currency.setLastUse(time);
 
         //Сообщаем репозиторию, что нужно записать новое время для валюты
-        mRepository.setTimeToDB(currency, time);
+        //mRepository.setTimeToDB(currency, time);
 
     }
 
@@ -117,7 +117,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         showCurrencies(currencies);
         noItemLongClicked = false;
         selectedCurrency = currency;
-        onTimeChanged(currency);
+        //onTimeChanged(currency);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         if (selectedCurrency != null) {
             Log.d(TAG, "selected currency: " + selectedCurrency.getName());
         }
-        onTimeChanged(currency);
+        //onTimeChanged(currency);
         //Если ни одна валюта не LongClicked, выбираем вторую валюту по логике из ТЗ
         //Если уже выбрана LongClicked валюта, текущая валюта являтеся второй
         //Запускаем Exchange фрагмент
@@ -158,7 +158,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
     //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
     private void sortCurrencies() {
-        Collections.sort(currencies, lastUsedComp);
+        //Collections.sort(currencies, lastUsedComp);
         Collections.sort(currencies, faveComp);
         //mView.setAdapter(currencies);
         mView.setCurrencies(currencies);

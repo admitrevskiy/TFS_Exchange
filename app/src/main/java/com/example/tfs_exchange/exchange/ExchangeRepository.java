@@ -8,6 +8,7 @@ import android.util.Log;
 import com.example.tfs_exchange.api.ApiResponse;
 import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.db.DBHelper;
+import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Exchange;
 
 import io.reactivex.Single;
@@ -38,10 +39,15 @@ public class ExchangeRepository implements ExchangeContract.Repository {
     private static final String EXCHANGE_DATE = "exchange_date";
     private static final String EXCHANGE_TIME = "exchange_time";
     private static final String EXCHANGE_MILLIS = "exchange_millis";
+    private static final String TABLE_CURRENCY_NAME = "currency_name";
+    private static final String CURRENCY_BASE = "currency_base";
+    private static final String LAST_USED = "last_used";
 
      //Записываем обмен в базу
     @Override
     public void setExchangeToDB(Exchange exchange) {
+        setTimeToDB(exchange.getCurrencyFrom(), exchange.getMillis());
+        setTimeToDB(exchange.getCurrencyTo(), exchange.getMillis());
         try(SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             cv = new ContentValues();
             cv.put(EXCHANGE_BASE, exchange.getCurrencyFrom());
@@ -67,5 +73,15 @@ public class ExchangeRepository implements ExchangeContract.Repository {
                 .latest(currencyFrom, currencyTo)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    //Записываем время последнего использования в БД
+    public void setTimeToDB(String currencyName, long time) {
+        cv = new ContentValues();
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            cv.put(LAST_USED, time);
+            db.update(TABLE_CURRENCY_NAME, cv, CURRENCY_BASE + " = ?", new String[] {currencyName});
+            Log.d(TAG, " " + currencyName + " lastUsed changed " + time );
+        }
     }
 }

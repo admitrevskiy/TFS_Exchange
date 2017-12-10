@@ -28,6 +28,5 @@ public interface CurrencyContract {
     interface Repository {
         Observable<List<Currency>> loadCurrencies();
         void setFaveToDB(Currency currency, int fave);
-        void setTimeToDB(Currency currency, long time);
     }
 }

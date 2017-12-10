@@ -37,7 +37,7 @@ public class CurrencyRepository implements CurrencyContract.Repository {
     private static final String FAVORITE = "favorite";
 
     //SQL команда для загрузки всех валют из базы
-    private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME; //+ " ORDER BY " + LAST_USED + " DESC, " + FAVORITE + " DESC";
+    private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC, " + FAVORITE;
 
     @Override
     public Observable<List<Currency>> loadCurrencies() {
@@ -57,17 +57,6 @@ public class CurrencyRepository implements CurrencyContract.Repository {
             cv.put(FAVORITE, fave);
             db.update(TABLE_CURRENCY_NAME, cv, CURRENCY_BASE + " = ?", new String[]{currency.getName()});
             Log.d(TAG, " " + currency.getName() + " favorite changed");
-        }
-    }
-
-    //Записываем время последнего использования в БД
-    @Override
-    public void setTimeToDB(Currency currency, long time) {
-        cv = new ContentValues();
-        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
-            cv.put(LAST_USED, time);
-            db.update(TABLE_CURRENCY_NAME, cv, CURRENCY_BASE + " = ?", new String[] {currency.getName()});
-            Log.d(TAG, " " + currency.getName() + " lastUsed changed " + time );
         }
     }
 

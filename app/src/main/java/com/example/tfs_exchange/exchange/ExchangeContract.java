@@ -3,6 +3,7 @@ package com.example.tfs_exchange.exchange;
 import android.os.Bundle;
 
 import com.example.tfs_exchange.api.ApiResponse;
+import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Exchange;
 
 import io.reactivex.Single;
