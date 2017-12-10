@@ -3,6 +3,7 @@ package com.example.tfs_exchange.history_filter;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.example.tfs_exchange.fragments.ToastHelper;
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Settings;
 
@@ -38,6 +39,9 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
     //Формат даты
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
+    //Тостер
+    private  ToastHelper toaster = ToastHelper.getInstance();
+
     //Конструктор
     public  HistoryFilterPresenter(HistoryFilterContract.View mView) {
         this.mView = mView;
@@ -60,7 +64,6 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         if (currencies != null) {
             this.currencies = currencies;
             mView.setAdapter(currencies);
-            mView.setCurrencies(currencies);
         }
     }
 
@@ -83,8 +86,11 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
     //Нажата кнопка "сохранить настройки", передаем настройи репозиторию, возвращаемся к фрагменту истории
     @Override
     public void onSaveSettings(){
-        mRepository.saveSettings(getSettings());
-        mView.popBackStack();
+        if (checkDates()) {
+            mRepository.saveSettings(getSettings());
+            mView.popBackStack();
+        }
+
     }
 
     //Валюта нажата и ее нужно будет записать в настройки
@@ -103,7 +109,6 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         }
         mRepository.setFilterToDB(currency.getName(), filter);
         mView.setAdapter(currencies);
-        mView.setCurrencies(currencies);
     }
 
     //Получаем выбранные настройи из view
@@ -122,9 +127,11 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         settings.setPeriod_id(periodId);
         if (periodId == 3) {
             try {
-                /** ПОПРАВИТЬ С CALENDAR**/
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dateFormat.parse(mView.getDateTo()));
+                calendar.add(Calendar.DATE, 1);
                 long dateFrom = dateFormat.parse(mView.getDateFrom()).getTime()/1000;
-                long dateTo = dateFormat.parse(mView.getDateTo()).getTime()/1000;
+                long dateTo = calendar.getTimeInMillis()/1000-1;
                 settings.setDateFrom(dateFrom);
                 settings.setDateTo(dateTo);
             } catch (ParseException e) {
@@ -143,6 +150,26 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
         mMonth = calendar.get(Calendar.MONTH);
         mDay = calendar.get(Calendar.DAY_OF_MONTH);
         mView.callDatePicker(textView, mYear, mMonth, mDay);
+    }
+
+    private boolean checkDates() {
+        if (mView.getPeriodId() == 3) {
+            try {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dateFormat.parse(mView.getDateTo()));
+                calendar.add(Calendar.DATE, 1);
+                long dateFrom = dateFormat.parse(mView.getDateFrom()).getTime()/1000;
+                long dateTo = calendar.getTimeInMillis()/1000-1;
+                if (dateFrom > dateTo) {
+                    toaster.showToast("Дата начала после даты конца!");
+                    return false;
+                }
+            } catch (ParseException e) {
+                toaster.showToast("Выберите даты!");
+                return false;
+            }
+        }
+        return true;
     }
 
 }

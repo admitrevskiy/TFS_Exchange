@@ -1,6 +1,7 @@
 package com.example.tfs_exchange.history;
 
 import com.example.tfs_exchange.model.Exchange;
+import com.example.tfs_exchange.model.Settings;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import io.reactivex.Observable;
 public interface HistoryContract {
     interface  Repository {
         Observable<List<Exchange>> loadHistory();
+        Settings loadSettings();
     }
 
     interface Presenter {
@@ -24,5 +26,6 @@ public interface HistoryContract {
     interface View {
         void setAdapter(List<Exchange> exchanges);
         void replaceByFilterFragment();
+        void setFilterText(String message);
     }
 }

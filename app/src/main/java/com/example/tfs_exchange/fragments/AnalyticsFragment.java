@@ -11,8 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.adapter.CurrencyRecyclerListAdapter;
@@ -28,6 +30,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Created by pusya on 29.11.17.
@@ -37,11 +40,16 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     private final static String TAG = "AnalyticsFragment";
 
+    //ButterKnife
+    private Unbinder unbinder;
+
+    //Адаптер
     private CurrencyRecyclerListAdapter adapter;
 
+    //MVP
     private AnalyticsContract.Presenter mPresenter;
 
-
+    //Период
     private int days = 7;
 
     @BindView(R.id.analytics_recycler)
@@ -62,6 +70,12 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     @BindView(R.id.month_button)
     RadioButton monthButton;
 
+    @BindView(R.id.graph_progress_bar)
+    ProgressBar progressBar;
+
+    @BindView(R.id.error_text_view)
+    TextView errorTextView;
+
     @Nullable
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,7 +86,7 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View analyticsFragmentRootView = inflater.inflate(R.layout.analytics_fragment, container, false);
-        ButterKnife.bind(this, analyticsFragmentRootView);
+        unbinder = ButterKnife.bind(this, analyticsFragmentRootView);
         mPresenter = new AnalyticsPresenter(this);
         mPresenter.getCurrencies();
 
@@ -126,6 +140,33 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     }
 
     @Override
+    public void showProgress() {
+        recyclerView.setVisibility(View.GONE);
+        choosePeriodGroup.setVisibility(View.GONE);
+        graph.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        errorTextView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void hideProgress() {
+        errorTextView.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
+        choosePeriodGroup.setVisibility(View.VISIBLE);
+        graph.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void handleError() {
+        errorTextView.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.VISIBLE);
+        choosePeriodGroup.setVisibility(View.VISIBLE);
+        graph.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
+    }
+
+    @Override
     public void refreshCurrencyList(List<Currency> currencies) {
         adapter.notifyDataSetChanged();
     }
@@ -152,5 +193,13 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     public void refreshGraph(){
         graph.removeAllSeries();
     }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        unbinder.unbind();
+    }
+
+
 
 }

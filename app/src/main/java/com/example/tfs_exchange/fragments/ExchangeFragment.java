@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import butterknife.BindView;
@@ -40,10 +41,8 @@ import com.example.tfs_exchange.model.Exchange;
 public class ExchangeFragment extends Fragment implements ExchangeContract.View {
     private static final String TAG = "ExchangeFragment";
 
-
-    private String currencyFrom;
-    private String currencyTo;
     private FragmentManager fragmentManager;
+
     private Unbinder unbinder;
 
     private static ExchangeContract.Presenter mPresenter;
@@ -64,6 +63,9 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     @BindView(R.id.exchange_button)
     Button exchangeButton;
+
+    @BindView(R.id.exchange_progress_bar)
+    ProgressBar progressBar;
 
     //Слушатель изменения в текстовом поле from
     @OnTextChanged(value = R.id.currency_from_edit, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
@@ -113,6 +115,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     //Устанавливаем в поля значение и курса и единицу для базовой валюты
     @Override
     public void activateRate (double rate) {
+        progressBar.setVisibility(View.GONE);
         currencyAmountFromEdit.setText("1.00");
         currencyAmountFromEdit.setEnabled(true);
         currencyAmountToEdit.setText(String.valueOf(rate) + " ");
@@ -125,6 +128,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     @Override
     public void activateRate(double rate, double amountFrom) {
+        progressBar.setVisibility(View.GONE);
         currencyAmountFromEdit.setText(String.valueOf(amountFrom));
         currencyAmountFromEdit.setEnabled(true);
         currencyAmountToEdit.setText(String.valueOf(amountFrom*rate) + " ");
@@ -137,6 +141,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     @Override
     public void disactivateRate() {
+        progressBar.setVisibility(View.VISIBLE);
         currencyAmountFromEdit.setEnabled(false);
         currencyAmountToEdit.setEnabled(false);
         exchangeButton.setEnabled(false);
@@ -146,9 +151,9 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     //Отписка происходит в onDetach
     @Override
     public void onDetach() {
-        super.onDetach();
         mPresenter.unsubscribeRate();
         unbinder.unbind();
+        super.onDetach();
         Log.d(TAG, "onDetach()");
     }
 
@@ -184,12 +189,9 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         public Dialog onCreateDialog(Bundle savedInstanceState)  {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-
-
-            builder.setTitle("Актуальный курс");
+            builder.setTitle(getString(R.string.dialog_message));
             builder.setMessage(message);
-
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(getString(R.string.ok_message), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     mPresenter.onExchange();
@@ -197,13 +199,12 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
                 }
             });
 
-            builder.setNegativeButton("ОТМЕНА", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton(getString(R.string.abort_message), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Log.d(TAG, "not Ok");
                 }
             });
-
             builder.setCancelable(true);
 
             Log.d(TAG, "created");

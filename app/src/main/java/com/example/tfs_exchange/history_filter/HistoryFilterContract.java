@@ -16,7 +16,6 @@ import io.reactivex.Observable;
 public interface HistoryFilterContract {
     interface View {
         void setAdapter(List<Currency> currencies);
-        void setCurrencies(List<Currency> currencies);
         int getPeriodId();
         String getDateFrom();
         String getDateTo();

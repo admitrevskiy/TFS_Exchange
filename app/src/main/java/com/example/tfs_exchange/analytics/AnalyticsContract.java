@@ -30,11 +30,15 @@ public interface AnalyticsContract {
         void refreshGraph();
         void refreshCurrencyList(List<Currency> currencies);
         int getDays();
+        void showProgress();
+        void hideProgress();
+        void handleError();
 
     }
 
     interface Repository {
         Observable<List<Currency>> loadCurrencies();
         Single<ArrayList<Float>> loadRates(int days, String currencyName);
+        void refreshApi();
     }
 }

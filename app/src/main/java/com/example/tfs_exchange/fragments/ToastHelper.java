@@ -13,4 +13,15 @@ public class ToastHelper {
         Toast toast = Toast.makeText(ExchangerApp.getContext(), text, Toast.LENGTH_LONG);
         toast.show();
     }
+
+    private static ToastHelper toaster;
+
+    public static ToastHelper getInstance() {
+        if (toaster == null) {
+            return new ToastHelper();
+        }
+        else {
+            return toaster;
+        }
+    }
 }

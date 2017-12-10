@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.tfs_exchange.history.HistoryContract;
 import com.example.tfs_exchange.history.HistoryPresenter;
@@ -43,6 +44,9 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
 
     @BindView(R.id.choose_filter)
     android.support.design.widget.FloatingActionButton chooseFilter;
+
+    @BindView(R.id.filter_text_view)
+    TextView filterText;
 
     @Override
     public void onPause() {
@@ -98,5 +102,10 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.addToBackStack(TAG);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void setFilterText(String message) {
+        filterText.setText(message);
     }
 }

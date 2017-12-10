@@ -12,6 +12,13 @@
     <string name="saved_date_to">date_to</string>
     <string name="all_time">все время</string>
     <string name="week">неделя</string>
+    <string name="two_weeks">2 недели</string>
     <string name="month">месяц</string>
     <string name="custom">выбрать</string>
+    <string name="dialog_message">Актуальный курс</string>
+    <string name="ok_message">ОК</string>
+    <string name="abort_message">Отмена</string>
+    <string name="no_filter">Фильтр не выбран</string>
+    <string name="currency">Валюты: </string>
+    <string name="connection_error">Нет данных/соединения</string>
 </resources>

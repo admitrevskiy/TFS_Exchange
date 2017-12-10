@@ -25,6 +25,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Created by pusya on 20.11.17.
@@ -34,9 +35,14 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
 
     private static final String TAG = "HistoryFilterFragment";
 
+    //Адаптер
     private CurrencyRecyclerListAdapter adapter;
 
+    //MVP
     private HistoryFilterContract.Presenter mPresenter;
+
+    //ButterKnife
+    private Unbinder unbinder;
 
     @BindView(R.id.filter_recycler_view)
     RecyclerView recyclerView;
@@ -63,7 +69,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View historyFilterFragmentRootView = inflater.inflate(R.layout.history_filter_fragment, container, false);
 
-        ButterKnife.bind(this, historyFilterFragmentRootView);
+        unbinder = ButterKnife.bind(this, historyFilterFragmentRootView);
         disableDate();
 
         mPresenter = new HistoryFilterPresenter(this);
@@ -85,14 +91,6 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(itemAnimator);
     }
-
-    @Override
-    public void setCurrencies(List<Currency> currencies) {
-        //this.currencies = currencies;
-        adapter.notifyDataSetChanged();
-    }
-
-
 
     @Override
     public void callDatePicker(TextView textView, int mYear, int mMonth, int mDay) {
@@ -153,9 +151,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
             dateToEdit.setText(dateTo);
         }
 
-
         dateFromEdit.setOnClickListener(v -> mPresenter.onChangeDate(dateFromEdit));
-
         dateToEdit.setOnClickListener(v -> mPresenter.onChangeDate(dateToEdit));
 
         /** Переписать на butterKnife!**/
@@ -185,7 +181,12 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
         };
         periodSpinner.setOnItemSelectedListener(periodSelectedListener);
         periodSpinner.setSelection(periodId);
+    }
 
+    @Override
+    public void onDetach() {
+        unbinder.unbind();
+        super.onDetach();
     }
 }
 

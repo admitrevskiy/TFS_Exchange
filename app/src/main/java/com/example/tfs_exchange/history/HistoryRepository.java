@@ -12,6 +12,7 @@ import com.example.tfs_exchange.ExchangerApp;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Exchange;
+import com.example.tfs_exchange.model.Settings;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,6 +85,24 @@ public class HistoryRepository implements HistoryContract.Repository {
         }
 
         Log.d(TAG, "Period ID: " + String.valueOf(periodFilter));
+    }
+
+    @Override
+    public Settings loadSettings() {
+        getSharedPreferences();
+        if (periodFilter != 3) {
+            if (currencyFilter == null || currencyFilter.size() == 0) {
+                return new Settings(periodFilter);
+            } else {
+                return new Settings(periodFilter, currencyFilter);
+            }
+        } else {
+            if (currencyFilter == null || currencyFilter.size() == 0) {
+                return new Settings(periodFilter, dateFromMillis, dateToMillis);
+            } else {
+                return new Settings(periodFilter, currencyFilter, dateFromMillis, dateToMillis);
+            }
+        }
     }
 
     //Загружаем из базы в соответствии с полученными shared preferences

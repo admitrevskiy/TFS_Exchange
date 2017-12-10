@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import com.example.tfs_exchange.fragments.ToastHelper;
 import com.example.tfs_exchange.model.Currency;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -23,13 +24,14 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     private List<com.example.tfs_exchange.model.Currency> currencies;
     private Currency selectedCurrency;
 
-
+    //Количество дней
     private int days = 7;
 
     //MVP
     private AnalyticsContract.View mView;
     private AnalyticsContract.Repository mRepository;
 
+    private ToastHelper toaster = ToastHelper.getInstance();
 
     //Конструктор
     public AnalyticsPresenter(AnalyticsContract.View mView) {
@@ -51,8 +53,13 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     //Загружаем историю курсов с сервера и передаём view на отрисовку
     @Override
     public void getRates() {
+        mView.showProgress();
+        Log.d(TAG, "showProgress");
         Disposable ratesSubscription = mRepository.loadRates(days, selectedCurrency.getName())
                 .subscribe(this::showRates, throwable -> {
+                    Log.d(TAG, throwable.getMessage());
+                    mRepository.refreshApi();
+                    mView.handleError();
                     Log.d(TAG, "problems with loading rates bro");
                 });
     }
@@ -78,6 +85,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
 
      //Полученный список курсов переводим в LineGraphSeries (com.jjoe64.graphview.series.LineGraphSeries) и отдаём view на отрисовку
     private void showRates(ArrayList<Float> list) {
+
         DataPoint[] dataPoints = new DataPoint[list.size()];
         Calendar calendar = Calendar.getInstance();
 
@@ -89,6 +97,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
         mView.refreshGraph();
         mView.plotGraph(series);
+        mView.hideProgress();
     }
 
     //Выбираем избранную валюту для получения данных с сервера

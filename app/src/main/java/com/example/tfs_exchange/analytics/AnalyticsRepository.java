@@ -48,6 +48,8 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
     private static final String FAVORITE = "favorite";
     private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC, " + FAVORITE;
 
+    FixerApi api = new FixerApiHelper().createApi();
+
     //Загружаем валюты из БД и сразу сортируем
     @Override
     public Observable<List<Currency>> loadCurrencies() {
@@ -64,7 +66,7 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
     //Загружаем курсы с сервера
     @Override
     public Single<ArrayList<Float>> loadRates(int days, String currencyName) {
-        FixerApi api = new FixerApiHelper().createApi();
+
         return Flowable.fromArray(generateDates(days))
                 .subscribeOn(Schedulers.io())
                 .flatMapSingle(date -> (api.getRateByDate(date, currencyName, "EUR")))
@@ -74,6 +76,16 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
                     return list;
                 })
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public void refreshApi() {
+        if (api != null) {
+            api = null;
+            api = new FixerApiHelper().createApi();
+        } else {
+            api = new FixerApiHelper().createApi();
+        }
     }
 
     //Сортировка перед передачей Presenter'у

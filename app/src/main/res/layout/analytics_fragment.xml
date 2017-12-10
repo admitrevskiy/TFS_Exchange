@@ -16,6 +16,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ProgressBar
+        android:id="@+id/graph_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:minHeight="60dp"
+        android:minWidth="60dp"
+        android:indeterminateTint="@color/menuYellow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph"
         android:layout_width="match_parent"
@@ -41,8 +59,7 @@
             android:id ="@+id/week_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text = "неделя"
-
+            android:text = "@string/week"
             android:textColor="@color/colorText"
             android:textSize="18sp"/>
 
@@ -50,7 +67,7 @@
             android:id="@+id/two_weeks_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2 недели"
+            android:text="@string/two_weeks"
             android:textColor="@color/colorText"
             android:textSize="18sp" />
 
@@ -58,10 +75,26 @@
             android:id="@+id/month_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="месяц"
+            android:text="@string/month"
             android:textColor="@color/colorText"
             android:textSize="18sp" />
 
     </RadioGroup>
+
+    <TextView
+        android:id="@+id/error_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/connection_error"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/colorText"
+        android:textSize="32sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>
