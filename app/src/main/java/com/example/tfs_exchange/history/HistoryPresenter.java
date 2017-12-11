@@ -4,12 +4,10 @@ import android.content.res.Resources;
 import android.util.Log;
 import com.example.tfs_exchange.ExchangerApp;
 import com.example.tfs_exchange.R;
-import com.example.tfs_exchange.exchange.ExchangeContract;
 import com.example.tfs_exchange.model.Exchange;
 import com.example.tfs_exchange.model.Settings;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;

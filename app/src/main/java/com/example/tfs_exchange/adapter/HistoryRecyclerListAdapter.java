@@ -10,7 +10,6 @@ import android.widget.TextView;
 import com.example.tfs_exchange.model.Exchange;
 import com.example.tfs_exchange.R;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 /** Разобраться как подключить ButterKnife.

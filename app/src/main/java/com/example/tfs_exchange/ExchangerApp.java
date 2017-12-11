@@ -4,8 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
 
-import com.example.tfs_exchange.db.DBHelper;
-
 /**
  * Created by pusya on 29.11.17.
  */
@@ -19,9 +17,7 @@ public class ExchangerApp extends Application {
         super.onCreate();
         context = getApplicationContext();
         resources = getResources();
-        //DBHelper.getInstance();
     }
-
 
     public static Context getContext() {
         return context;

@@ -29,7 +29,6 @@ import butterknife.Unbinder;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.exchange.ExchangeContract;
 import com.example.tfs_exchange.exchange.ExchangePresenter;
-import com.example.tfs_exchange.model.Exchange;
 
 /**
  * Created by pusya on 01.11.17.

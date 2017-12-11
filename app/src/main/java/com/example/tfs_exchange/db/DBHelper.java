@@ -3,22 +3,16 @@ package com.example.tfs_exchange.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.example.tfs_exchange.ExchangerApp;
 import com.example.tfs_exchange.model.Currency;
-import com.example.tfs_exchange.model.Exchange;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Created by pusya on 16.10.17.

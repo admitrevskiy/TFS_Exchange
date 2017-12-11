@@ -81,6 +81,7 @@ public class CurrencyRepository implements CurrencyContract.Repository {
                         int favorite = cursor.getInt(favoriteColId);
 
                         //В SQLite нет типа boolean, поэтому НЕ избранные валюты имеют в колонке favorite 0, а избранные 1
+                        //Добавляем валюту в List с валютами
                         if (favorite == 0) {
                             currencies.add(currency);
                             currency.setFavorite(false);
@@ -90,8 +91,6 @@ public class CurrencyRepository implements CurrencyContract.Repository {
                             currency.setFavorite(true);
                             faves++;
                         }
-                        //Добавляем валюту в List с валютами
-
                     } while (cursor.moveToNext());
                 }
             }

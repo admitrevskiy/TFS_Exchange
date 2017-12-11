@@ -1,7 +1,5 @@
 package com.example.tfs_exchange.model;
 
-import java.util.Date;
-
 /**
  * Created by pusya on 10.11.17.
  * Модель истории обмена.

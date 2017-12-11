@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -25,7 +24,6 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -199,7 +197,4 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         super.onDetach();
         unbinder.unbind();
     }
-
-
-
 }

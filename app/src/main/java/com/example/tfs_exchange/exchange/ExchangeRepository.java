@@ -8,7 +8,6 @@ import android.util.Log;
 import com.example.tfs_exchange.api.ApiResponse;
 import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.db.DBHelper;
-import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Exchange;
 
 import io.reactivex.Single;

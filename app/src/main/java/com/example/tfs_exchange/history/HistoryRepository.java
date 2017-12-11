@@ -281,5 +281,4 @@ public class HistoryRepository implements HistoryContract.Repository {
         exchanges.add(new Exchange(currencyFrom, currencyTo, amountFrom, amountTo, date, time, millis));
         Log.d(TAG, currencyFrom + " " + currencyTo + " " + date);
     }
-
 }

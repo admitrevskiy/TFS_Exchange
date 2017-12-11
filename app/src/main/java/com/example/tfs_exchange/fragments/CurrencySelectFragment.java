@@ -45,7 +45,7 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
 
     private CurrencyRecyclerListAdapter adapter;
 
-    @BindView(R.id.recyclerView)
+    @BindView(R.id.currency_recycler_view)
     RecyclerView recyclerView;
 
 

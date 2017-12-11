@@ -7,9 +7,7 @@ import com.example.tfs_exchange.comparators.LastUsedComparator;
 import com.example.tfs_exchange.comparators.LongClickedComparator;
 import com.example.tfs_exchange.model.Currency;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import io.reactivex.disposables.Disposable;
@@ -63,7 +61,6 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
             Log.d(TAG, "show actual currencies");
         }
     }
-
 
     //Передаем валюты view
     @Override
@@ -128,7 +125,6 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
             mView.replaceByExchangeFragment(selectedCurrency.getName(), currency.getName());
         }
     }
-
 
     //Получаем вторую валюту для обмена по ТЗ
     protected String getCurrencyForExchange(Currency selectedCurrency) {
