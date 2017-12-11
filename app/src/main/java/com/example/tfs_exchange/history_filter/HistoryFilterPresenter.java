@@ -41,6 +41,9 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
     //Тостер
     private  ToastHelper toaster = ToastHelper.getInstance();
 
+    //Rx
+    private Disposable currencySubscription;
+
     //Конструктор
     public  HistoryFilterPresenter(HistoryFilterContract.View mView) {
         this.mView = mView;
@@ -51,7 +54,7 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
     @Override
     public void getCurrencies() {
         currencies = new ArrayList<>();
-        Disposable currencySubscription = mRepository.loadCurrencies()
+        currencySubscription = mRepository.loadCurrencies()
                 .subscribe(this::showCurrencies, throwable -> {
                     Log.d(TAG, "problems, bro");
                 });
@@ -169,6 +172,13 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
             }
         }
         return true;
+    }
+
+    @Override
+    public void onDetach() {
+        if (currencySubscription!= null) {
+            currencySubscription.dispose();
+        }
     }
 
 }

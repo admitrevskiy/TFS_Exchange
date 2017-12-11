@@ -34,6 +34,9 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
     //Флаг
     private boolean noItemLongClicked;
 
+    //Rx
+    private Disposable currencySubscription;
+
     //Компараторы
     private FavoriteComparator faveComp = new FavoriteComparator();
     private LastUsedComparator lastUsedComp = new LastUsedComparator();
@@ -51,7 +54,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         selectedCurrency = null;
         //currencies = new ArrayList<>();
         if (currencies == null) {
-            Disposable currencySubscription = mRepository.loadCurrencies()
+            currencySubscription = mRepository.loadCurrencies()
                     .subscribe(this::showCurrencies, throwable -> {
                         Log.d(TAG, "problems, bro");
                     });
@@ -151,5 +154,12 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         mView.setCurrencies(currencies);
         Log.d(TAG, " sortCurrencies");
         Log.d(TAG, currencies.toString());
+    }
+
+    @Override
+    public void onDetach() {
+        if (currencySubscription != null) {
+            currencySubscription.dispose();
+        }
     }
 }

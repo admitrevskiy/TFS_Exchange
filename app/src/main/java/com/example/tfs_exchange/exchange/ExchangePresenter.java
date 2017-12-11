@@ -64,7 +64,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
 
     //Отписка
     @Override
-    public void unsubscribeRate() {
+    public void onDetach() {
         if (rateSubscription != null) rateSubscription.dispose();
         Log.d(TAG, "unsubscribe from rate");
     }

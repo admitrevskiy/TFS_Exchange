@@ -70,7 +70,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     @OnTextChanged(value = R.id.currency_from_edit, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
     public void fromCurrencyAmountChanged(Editable s) {
         if (!s.toString().equals("") && currencyAmountFromEdit.hasFocus()) {
-            currencyAmountToEdit.setText(String.valueOf(Double.parseDouble(s.toString()) * rate));
+            currencyAmountToEdit.setText(String.format( "%.4f", (Double.parseDouble(s.toString()) / rate)));
         }
     }
 
@@ -78,7 +78,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     @OnTextChanged(value = R.id.currency_to_edit, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
     public void toCurrencyAmountChanged(Editable s) {
         if (!s.toString().equals("") && currencyAmountToEdit.hasFocus()) {
-            currencyAmountFromEdit.setText(String.valueOf(Double.parseDouble(s.toString()) / rate));
+            currencyAmountFromEdit.setText(String.format( "%.4f", (Double.parseDouble(s.toString()) / rate)));
         }
     }
 
@@ -114,9 +114,9 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     @Override
     public void activateRate (double rate) {
         progressBar.setVisibility(View.GONE);
-        currencyAmountFromEdit.setText("1.00");
+        currencyAmountFromEdit.setText("1.0000");
         currencyAmountFromEdit.setEnabled(true);
-        currencyAmountToEdit.setText(String.valueOf(rate) + " ");
+        currencyAmountToEdit.setText(String.format("%.4f", rate));
         currencyAmountToEdit.setEnabled(true);
         exchangeButton.setText("ОБМЕНЯТЬ");
         exchangeButton.setEnabled(true);
@@ -129,7 +129,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         progressBar.setVisibility(View.GONE);
         currencyAmountFromEdit.setText(String.valueOf(amountFrom));
         currencyAmountFromEdit.setEnabled(true);
-        currencyAmountToEdit.setText(String.valueOf(amountFrom*rate) + " ");
+        currencyAmountToEdit.setText(String.format("%.4f", amountFrom*rate));
         currencyAmountToEdit.setEnabled(true);
         exchangeButton.setText("ОБМЕНЯТЬ");
         exchangeButton.setEnabled(true);
@@ -149,7 +149,7 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     //Отписка происходит в onDetach
     @Override
     public void onDetach() {
-        mPresenter.unsubscribeRate();
+        mPresenter.onDetach();
         unbinder.unbind();
         super.onDetach();
         Log.d(TAG, "onDetach()");

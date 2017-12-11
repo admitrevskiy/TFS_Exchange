@@ -25,7 +25,7 @@ public interface ExchangeContract {
 
     interface Presenter {
         void subscribeRate(String currencyFrom, String currencyTo);
-        void unsubscribeRate();
+        void onDetach();
         void getCurrenciesAndRate(Bundle bundle);
         void onExchange();
     }

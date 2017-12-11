@@ -139,6 +139,7 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     @Nullable
     @Override
     public void onDetach() {
+        mPresenter.onDetach();
         unbinder.unbind();
         super.onDetach();
     }

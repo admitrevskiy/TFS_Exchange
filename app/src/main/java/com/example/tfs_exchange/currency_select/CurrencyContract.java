@@ -23,6 +23,7 @@ public interface CurrencyContract {
         void onFavoriteChanged(Currency currency);
         void onCurrencyLongClicked(Currency currency);
         void onCurrencyClicked(Currency currency);
+        void onDetach();
     }
 
     interface Repository {

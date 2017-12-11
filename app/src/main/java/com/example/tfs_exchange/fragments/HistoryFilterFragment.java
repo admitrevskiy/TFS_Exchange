@@ -185,6 +185,7 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
 
     @Override
     public void onDetach() {
+        mPresenter.onDetach();
         unbinder.unbind();
         super.onDetach();
     }

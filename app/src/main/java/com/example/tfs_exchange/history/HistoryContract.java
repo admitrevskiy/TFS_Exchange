@@ -21,6 +21,7 @@ public interface HistoryContract {
     interface Presenter {
         void getHistory();
         void onFilterButtonClicked();
+        void onDetach();
     }
 
     interface View {

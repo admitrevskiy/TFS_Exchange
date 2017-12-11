@@ -177,7 +177,8 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
     }
 
     @Override
-    public void plotGraph(LineGraphSeries<DataPoint> series) {
+    public void plotGraph(LineGraphSeries<DataPoint> series, String label) {
+        graph.getGridLabelRenderer().setVerticalAxisTitle(label);
         graph.removeAllSeries();
         graph.addSeries(series);
         graph.getViewport().setMinX(1);
@@ -194,7 +195,9 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     @Override
     public void onDetach() {
-        super.onDetach();
+        mPresenter.onDetach();
         unbinder.unbind();
+        super.onDetach();
+
     }
 }

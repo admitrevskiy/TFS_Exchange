@@ -31,6 +31,10 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     private AnalyticsContract.View mView;
     private AnalyticsContract.Repository mRepository;
 
+    //Rx
+    private Disposable ratesSubscription;
+    private Disposable currencySubscription;
+
     private ToastHelper toaster = ToastHelper.getInstance();
 
     //Конструктор
@@ -43,10 +47,11 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     @Override
     public void getCurrencies() {
         currencies = new ArrayList<>();
-        Disposable currencySubscription = mRepository.loadCurrencies()
+        currencySubscription = mRepository.loadCurrencies()
                 .subscribe(this::showCurrencies, throwable -> {
                     //getCurrencies();
                     Log.d(TAG, "problems with loading currencies bro");
+
                 });
     }
 
@@ -55,20 +60,27 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     public void getRates() {
         mView.showProgress();
         Log.d(TAG, "showProgress");
-        Disposable ratesSubscription = mRepository.loadRates(days, selectedCurrency.getName())
-                .subscribe(this::showRates, throwable -> {
-                    Log.d(TAG, throwable.getMessage());
-                    mRepository.refreshApi();
-                    mView.handleError();
-                    Log.d(TAG, "problems with loading rates bro");
-                });
+        try {
+            ratesSubscription = mRepository.loadRates(days, selectedCurrency.getName())
+                    .subscribe(this::showRates, throwable -> {
+                        Log.d(TAG, throwable.getMessage());
+                        mRepository.refreshApi();
+                        mView.handleError();
+                        Log.d(TAG, "problems with loading rates bro");
+                    });
+        } catch (NullPointerException e) {
+            Log.d(TAG, e.getMessage());
+        }
     }
 
     //Изменился период на view
     @Override
     public void onPeriodChanged() {
         days = mView.getDays();
-        Log.d(TAG, days + " days for " + selectedCurrency.getName());
+        if (selectedCurrency != null) {
+            Log.d(TAG, days + " days for " + selectedCurrency.getName());
+        }
+
         getRates();
     }
 
@@ -96,7 +108,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
         }
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
         mView.refreshGraph();
-        mView.plotGraph(series);
+        mView.plotGraph(series, selectedCurrency.getName() + "/EUR");
         mView.hideProgress();
     }
 
@@ -114,6 +126,16 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
         selectedCurrency = currency;
         Log.d(TAG, "selected currency: " + selectedCurrency.getName());
         mView.refreshCurrencyList(currencies);
+    }
+
+    @Override
+    public void onDetach() {
+        if (ratesSubscription != null) {
+            ratesSubscription.dispose();
+        }
+        if (currencySubscription != null) {
+            currencySubscription.dispose();
+        }
 
     }
 }

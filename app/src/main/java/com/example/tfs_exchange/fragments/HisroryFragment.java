@@ -79,6 +79,7 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
 
     @Override
     public void onDetach(){
+        mPresenter.onDetach();
         unbinder.unbind();
         super.onDetach();
     }

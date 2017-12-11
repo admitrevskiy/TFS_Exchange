@@ -36,6 +36,9 @@ public class HistoryPresenter implements HistoryContract.Presenter {
     //Формат даты
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
+    //Rx
+    private Disposable historySubscription;
+
     //Конструктор
     public HistoryPresenter(HistoryContract.View mView) {
         this.mView = mView;
@@ -45,7 +48,7 @@ public class HistoryPresenter implements HistoryContract.Presenter {
     //Загружаем валюты
     @Override
     public void getHistory() {
-        Disposable historySubscription = mRepository.loadHistory()
+        historySubscription = mRepository.loadHistory()
                 .subscribe(this::showHistory, throwable -> {
                     Log.d(TAG, "problems, bro");
                 });
@@ -109,6 +112,13 @@ public class HistoryPresenter implements HistoryContract.Presenter {
 
     protected void setPeriodId(int id) {
         this.periodId = id;
+    }
+
+    @Override
+    public void onDetach() {
+        if (historySubscription != null) {
+            historySubscription.dispose();
+        }
     }
 
 }

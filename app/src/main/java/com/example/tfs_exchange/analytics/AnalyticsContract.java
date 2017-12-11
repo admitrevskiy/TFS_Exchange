@@ -20,12 +20,13 @@ public interface AnalyticsContract {
         void getRates();
         void setFavorite(Currency currenc);
         void onPeriodChanged();
+        void onDetach();
 
     }
 
     interface View {
         void setAdapter(List<Currency> currencies);
-        void plotGraph(LineGraphSeries<DataPoint> series);
+        void plotGraph(LineGraphSeries<DataPoint> series, String label);
         void refreshGraph();
         void refreshCurrencyList(List<Currency> currencies);
         int getDays();

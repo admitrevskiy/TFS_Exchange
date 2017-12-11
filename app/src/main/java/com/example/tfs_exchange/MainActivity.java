@@ -9,6 +9,9 @@ import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+
+import com.example.tfs_exchange.Main.MainContract;
+import com.example.tfs_exchange.Main.MainPresenter;
 import com.example.tfs_exchange.fragments.AnalyticsFragment;
 import com.example.tfs_exchange.fragments.CurrencySelectFragment;
 import com.example.tfs_exchange.fragments.HisroryFragment;
@@ -16,7 +19,7 @@ import com.example.tfs_exchange.fragments.HisroryFragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements MainContract.View{
 
     private static final String TAG = "MainActivity";
 
@@ -25,6 +28,8 @@ public class MainActivity extends FragmentActivity {
     CurrencySelectFragment currencySelectFragment;
     HisroryFragment historyFragment;
     AnalyticsFragment analyticsFragment;
+
+    MainContract.Presenter mPresenter;
 
    @BindView(R.id.bottom_navigation)
    public BottomNavigationView bottomMenu;
@@ -37,32 +42,27 @@ public class MainActivity extends FragmentActivity {
 
         fragmentManager = getSupportFragmentManager();
         ButterKnife.bind(this);
-
+        mPresenter = new MainPresenter(this);
         currencySelectFragment = new CurrencySelectFragment();
         historyFragment = new HisroryFragment();
         analyticsFragment = new AnalyticsFragment();
 
-        if (savedInstanceState == null) {
-            replaceFragment(currencySelectFragment);
-            Log.d(TAG, "add CurrencySelectFragment");
-        } else {
-            Log.d(TAG, "restoreState");
-        }
+        mPresenter.initFirstFragment(savedInstanceState);
 
         bottomMenu.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.exchange:
-                        replaceFragment(currencySelectFragment);
+                        mPresenter.onExchangeClicked();
                         Log.d(TAG, "add CurrencySelectFragment");
                         break;
                     case R.id.history:
-                        replaceFragment(historyFragment);
+                        mPresenter.onHistoryClicked();
                         Log.d(TAG, "add HistoryFragment");
                         break;
                     case R.id.analytics:
-                        replaceFragment(analyticsFragment);
+                        mPresenter.onAnalyticsClicked();
                         Log.d(TAG, "add AnalyticsFragment");
                         break;
                 }
@@ -71,7 +71,8 @@ public class MainActivity extends FragmentActivity {
         });
     }
 
-    private void replaceFragment (Fragment fragment) {
+    @Override
+    public void replaceFragment (Fragment fragment) {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.commit();

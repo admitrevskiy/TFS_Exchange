@@ -31,6 +31,7 @@ public interface HistoryFilterContract {
         void onCurrencyClicked(Currency currency);
         void onChangeDate(TextView textView);
         void setSettings();
+        void onDetach();
     }
 
     interface Repository {

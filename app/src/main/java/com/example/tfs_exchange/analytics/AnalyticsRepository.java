@@ -73,6 +73,8 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
                 .reduce(new ArrayList<Float>(), (list, rate) -> {
                     list.add((float)rate.getRates().getRate());
                     Log.d(TAG, list.toString());
+                    //Делаем перерыв чтобы избежать HTTP 429 response
+                    Thread.sleep(334);
                     return list;
                 })
                 .observeOn(AndroidSchedulers.mainThread());
@@ -124,6 +126,12 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
                         currency.setName(cursor.getString(cursor.getColumnIndex(CURRENCY_BASE)));
                         currency.setLastUse(cursor.getInt(cursor.getColumnIndex(LAST_USED)));
                         int favorite = cursor.getInt(cursor.getColumnIndex(FAVORITE));
+
+                        //Нет смысла смотреть курс евро к евро, поэтому не добавляем EUR в список валют
+                        if (currency.getName().equals("EUR")) {
+                            continue;
+                        }
+
                         //В SQLite нет типа boolean, поэтому НЕ избранные валюты имеют в колонке favorite 0, а избранные 1
                         if (favorite == 0) {
                             currencies.add(currency);
