@@ -34,15 +34,19 @@ import butterknife.Unbinder;
 public class CurrencySelectFragment extends Fragment implements CurrencyContract.View {
 
     private final static String TAG = "CurrencySelectFragment";
+
+    //MVP
     private CurrencyContract.Presenter mPresenter;
+
+    //Менеджер фрагментов
     private FragmentManager fragmentManager;
 
     private Unbinder unbinder;
 
+    private CurrencyRecyclerListAdapter adapter;
+
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
-
-    private CurrencyRecyclerListAdapter adapter;
 
 
     @Nullable
@@ -59,7 +63,6 @@ public class CurrencySelectFragment extends Fragment implements CurrencyContract
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View firstFragmentRootView = inflater.inflate(R.layout.currency_select_fragment, container, false);
-
         unbinder = ButterKnife.bind(this, firstFragmentRootView);
 
         fragmentManager = getFragmentManager();

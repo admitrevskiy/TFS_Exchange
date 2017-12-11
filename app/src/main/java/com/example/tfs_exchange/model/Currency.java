@@ -91,13 +91,16 @@ public class Currency {
         if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
             return false;
         }
+        if ((this.isFavorite() && !((Currency) o).isFavorite()) || (!this.isFavorite() && ((Currency) o).isFavorite())) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
-        //hash +=  (int)((char)this.getName().charAt(0));
+        hash +=  (int)((char)this.getName().charAt(0));
         return hash;
     }
 

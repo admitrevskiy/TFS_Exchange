@@ -3,15 +3,13 @@ package com.example.tfs_exchange.exchange;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.model.Exchange;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+
 
 /**
  * Created by pusya on 30.11.17.
@@ -75,12 +73,16 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     @Override
     public void getCurrenciesAndRate(Bundle bundle) {
         if (bundle!= null) {
-            currencyFrom = bundle.getStringArray("currencies")[0];
-            currencyTo = bundle.getStringArray("currencies")[1];
-            mView.setCurrencies(currencyFrom, currencyTo);
-            subscribeRate(currencyFrom, currencyTo);
+            try {
+                currencyFrom = bundle.getStringArray("currencies")[0];
+                currencyTo = bundle.getStringArray("currencies")[1];
+                mView.setCurrencies(currencyFrom, currencyTo);
+                subscribeRate(currencyFrom, currencyTo);
+            } catch (NullPointerException e) {
+                Log.d(TAG, "problems with bundle: " + e.getMessage());
+            }
         } else {
-            Log.d(TAG, "problems, bro");
+            Log.d(TAG, "problems with bundle");
         }
     }
 
@@ -91,7 +93,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     @Override
     public void onExchange() {
         long now = new Date().getTime();
-        if (now - time < 5*60*1000) {
+        if (checkTime(now, time)) {
             Log.d(TAG, "time is Ok");
             Date time = new Date();
             long millis = time.getTime()/1000;
@@ -123,6 +125,14 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
             } catch (Exception e) {
                 Log.d(TAG, "trouble with new subscription");
             }
+        }
+    }
+
+    protected boolean checkTime(long now, long time) {
+        if (now - time < 5*60*1000) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.tfs_exchange.MainActivity;
 import com.example.tfs_exchange.history.HistoryContract;
 import com.example.tfs_exchange.history.HistoryPresenter;
 import com.example.tfs_exchange.model.Exchange;
@@ -74,6 +75,7 @@ public class HisroryFragment extends Fragment implements HistoryContract.View {
         });
 
         Log.d(TAG, " onCreateView" + this.hashCode());
+
 
         return historyFragmentRootView;
     }

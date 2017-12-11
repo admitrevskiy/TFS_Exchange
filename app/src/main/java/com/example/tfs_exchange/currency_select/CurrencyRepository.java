@@ -64,6 +64,7 @@ public class CurrencyRepository implements CurrencyContract.Repository {
     private List<Currency> loadAll() {
         List<Currency> currencies = new ArrayList<>();
         Currency currency;
+        int faves = 0;
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();) {
             try (Cursor cursor = db.rawQuery(GET_ALL_CURRENCIES, null);) {
                 if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
@@ -85,10 +86,10 @@ public class CurrencyRepository implements CurrencyContract.Repository {
                             currency.setFavorite(false);
                             Log.d(TAG, " " + currency.getName() + " was added, last use: " + currency.getLastUse());
                         } else {
-                            currencies.add(0, currency);
+                            currencies.add(faves,currency);
                             currency.setFavorite(true);
+                            faves++;
                         }
-
                         //Добавляем валюту в List с валютами
 
                     } while (cursor.moveToNext());

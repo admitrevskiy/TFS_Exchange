@@ -2,7 +2,6 @@ package com.example.tfs_exchange.history;
 
 import android.content.res.Resources;
 import android.util.Log;
-
 import com.example.tfs_exchange.ExchangerApp;
 import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.exchange.ExchangeContract;
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-
 import io.reactivex.disposables.Disposable;
 
 /**
@@ -78,7 +76,7 @@ public class HistoryPresenter implements HistoryContract.Presenter {
     }
 
     //Составляем сообщение о настройках
-    private String makeMessage() {
+    protected String makeMessage() {
         if (currencyFilter != null && currencyFilter.size()>0) {
             currencyMessage = currencyFilter.toString().substring(1, currencyFilter.toString().length()-1);
         }
@@ -109,6 +107,10 @@ public class HistoryPresenter implements HistoryContract.Presenter {
                 return "С " + dateFormat.format(dateFrom) + "\nпо " + dateFormat.format(dateTo) + "\n для " + currencyMessage;
             }
         }
+    }
+
+    protected void setPeriodId(int id) {
+        this.periodId = id;
     }
 
 }

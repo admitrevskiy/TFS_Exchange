@@ -97,16 +97,6 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
         sortCurrencies();
     }
 
-    //
-    private void onTimeChanged(Currency currency) {
-        //Получаем настоящее время и присваиваем валюте
-        //long time = new Date().getTime()/1000;
-        //currency.setLastUse(time);
-
-        //Сообщаем репозиторию, что нужно записать новое время для валюты
-        //mRepository.setTimeToDB(currency, time);
-
-    }
 
     @Override
     public void onCurrencyLongClicked(Currency currency) {
@@ -141,13 +131,14 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
 
     //Получаем вторую валюту для обмена по ТЗ
-    private String getCurrencyForExchange(Currency selectedCurrency) {
-        for (Currency currency : currencies) {
-            if (currency.isFavorite() && !currency.getName().equals(selectedCurrency.getName())) {
-                return currency.getName();
-            }
-            else if (!currency.isFavorite()) {
-                break;
+    protected String getCurrencyForExchange(Currency selectedCurrency) {
+        if (currencies != null) {
+            for (Currency currency : currencies) {
+                if (currency.isFavorite() && !currency.getName().equals(selectedCurrency.getName())) {
+                    return currency.getName();
+                } else if (!currency.isFavorite()) {
+                    break;
+                }
             }
         }
         if (selectedCurrency.getName().equals("USD")) {
@@ -158,7 +149,7 @@ public class CurrencySelectPresenter implements CurrencyContract.Presenter {
 
     //Сортируем избранные валюты вверх по списку - сначала по использованиям, потом по избранности
     private void sortCurrencies() {
-        //Collections.sort(currencies, lastUsedComp);
+        Collections.sort(currencies, lastUsedComp);
         Collections.sort(currencies, faveComp);
         //mView.setAdapter(currencies);
         mView.setCurrencies(currencies);

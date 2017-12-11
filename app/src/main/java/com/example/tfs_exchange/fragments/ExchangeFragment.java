@@ -89,7 +89,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         mPresenter.onExchange();
         FragmentManager fm = getFragmentManager();
         fm.popBackStack();
-        //showDialog();
         Log.d(TAG, " button clicked");
     }
 
