@@ -46,6 +46,7 @@ public class HistoryRepository implements HistoryContract.Repository {
 
     //Ресурсы нужны для загрузки shared preferences
     private SharedPreferences sharedPrefs;
+    private SharedPreferences timeSharedPrefs;
     private Resources resources = ExchangerApp.getAppResources();
 
     //Синглтон
@@ -67,6 +68,7 @@ public class HistoryRepository implements HistoryContract.Repository {
     //Получаем shared preferences, чтобы понять, что загружать из базы
     private void getSharedPreferences() {
         sharedPrefs = ExchangerApp.getContext().getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
+        timeSharedPrefs = ExchangerApp.getContext().getSharedPreferences(resources.getString(R.string.preference_time_file), Context.MODE_PRIVATE);
         if (sharedPrefs.contains(resources.getString(R.string.period_id))) {
             periodFilter = sharedPrefs.getInt(resources.getString(R.string.period_id), 0);
             Log.d(TAG, "Period ID: " + String.valueOf(periodFilter));
@@ -75,12 +77,12 @@ public class HistoryRepository implements HistoryContract.Repository {
             currencyFilter = sharedPrefs.getStringSet(resources.getString(R.string.currencies), new HashSet<>());
             Log.d(TAG, currencyFilter.toString());
         }
-        if (sharedPrefs.contains(resources.getString((R.string.saved_date_from)))) {
-            dateFromMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_from), 0);
+        if (timeSharedPrefs.contains(resources.getString((R.string.saved_date_from)))) {
+            dateFromMillis = timeSharedPrefs.getLong(resources.getString(R.string.saved_date_from), 0);
             Log.d(TAG, "DateFrom: " + dateFromMillis);
         }
-        if (sharedPrefs.contains(resources.getString((R.string.saved_date_to)))) {
-            dateToMillis = sharedPrefs.getLong(resources.getString(R.string.saved_date_to), 0);
+        if (timeSharedPrefs.contains(resources.getString((R.string.saved_date_to)))) {
+            dateToMillis = timeSharedPrefs.getLong(resources.getString(R.string.saved_date_to), 0);
             Log.d(TAG, "DateTo: " + dateToMillis);
         }
 

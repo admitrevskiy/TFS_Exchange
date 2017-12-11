@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,8 +75,9 @@ public class HistoryFilterPresenter implements HistoryFilterContract.Presenter {
     public void setSettings() {
         String[] periods = mRepository.getStrings();
         int periodId = mRepository.getPeriodFilter();
-        if (periodId != 3) {
-            mView.setTimeSettings(periodId, null, null, periods);
+        if (mRepository.getDates().length == 0 || (mRepository.getDates()[0] == 0 && mRepository.getDates()[1] == 0)) {
+            String date = dateFormat.format(new Date());
+            mView.setTimeSettings(periodId, date, date, periods);
         } else {
             long[] dates = mRepository.getDates();
             Log.d(TAG, dates[0] + " " + dates[1]);

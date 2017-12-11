@@ -52,6 +52,7 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
     //Контекст нужен для работы с shared preferences
     //Ресурсы нужны для доступа к строкам из values/strings
     private SharedPreferences sharedPreferences;
+    private SharedPreferences timeSharedPreferences;
     private Context context = ExchangerApp.getContext();
     private Resources resources = ExchangerApp.getAppResources();
 
@@ -79,13 +80,13 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
     @Override
     public long[] getDates() {
         long[] dates = new long[2];
-        sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
-        if (sharedPreferences.contains(resources.getString((R.string.saved_date_from)))) {
-            dateFromMillis = sharedPreferences.getLong(resources.getString(R.string.saved_date_from), 0);
+        timeSharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_time_file), Context.MODE_PRIVATE);
+        if (timeSharedPreferences.contains(resources.getString((R.string.saved_date_from)))) {
+            dateFromMillis = timeSharedPreferences.getLong(resources.getString(R.string.saved_date_from), 0);
             Log.d(TAG, "DateFrom: " + dateFromMillis);
         }
-        if (sharedPreferences.contains(resources.getString((R.string.saved_date_to)))) {
-            dateToMillis = sharedPreferences.getLong(resources.getString(R.string.saved_date_to), 0);
+        if (timeSharedPreferences.contains(resources.getString((R.string.saved_date_to)))) {
+            dateToMillis = timeSharedPreferences.getLong(resources.getString(R.string.saved_date_to), 0);
             Log.d(TAG, "DateTo: " + dateToMillis);
         }
         dates[0] = dateFromMillis;
@@ -106,7 +107,9 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
     @Override
     public void saveSettings(Settings settings) {
         sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_file), Context.MODE_PRIVATE);
+        timeSharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_time_file), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences.Editor timeEditor = timeSharedPreferences.edit();
         editor.clear();
 
         int periodId = settings.getPeriod_id();
@@ -120,13 +123,15 @@ public class HistoryFilterRepository implements HistoryFilterContract.Repository
         }
 
         if (settings.getDateFrom() != 0 && settings.getDateTo() != 0) {
+            timeEditor.clear();
             long dateFrom = settings.getDateFrom();
             long dateTo = settings.getDateTo();
-            editor.putLong(resources.getString(R.string.saved_date_from), dateFrom);
-            editor.putLong(resources.getString(R.string.saved_date_to), dateTo);
+            timeEditor.putLong(resources.getString(R.string.saved_date_from), dateFrom);
+            timeEditor.putLong(resources.getString(R.string.saved_date_to), dateTo);
             Log.d(TAG, "saved prefs: date_from " + dateFrom + " date_to " + dateTo);
         }
         editor.apply();
+        timeEditor.apply();
     }
 
     //Сохраняем валюты как необходимые при сортировке
