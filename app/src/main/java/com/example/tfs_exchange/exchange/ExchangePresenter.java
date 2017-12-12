@@ -43,7 +43,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     public ExchangePresenter(ExchangeContract.View mView) {
         this.mView = mView;
         this.mRepository = new ExchangeRepository();
-        checkTime = 5*1000;
+        checkTime = 5*1000*60;
     }
 
     //Получаем курс и передаем его view на отрисовку
