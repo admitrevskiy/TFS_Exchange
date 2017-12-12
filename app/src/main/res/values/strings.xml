@@ -3,7 +3,9 @@
     <string name="period">Период</string>
     <string name="preference_file">com.example.tfs_exchange.PREFERENCE_FILE</string>
     <string name="preference_time_file">com.example.tfs_exchange.PREFERENCE_TIME_FILE</string>
+    <string name="preference_currency_file">com.example.tfs_exchange.PREFERENCE_CURRENCY_FILE</string>
     <string name="period_id">period</string>
+    <string name="selected_currency">selected_currency</string>
     <string name="currencies">currencies</string>
     <string name="date_from">дата начала</string>
     <string name="date_to">дата конца</string>

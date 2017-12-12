@@ -24,7 +24,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     private List<com.example.tfs_exchange.model.Currency> currencies;
     private Currency selectedCurrency;
 
-    //Количество дней
+    //Количество дней по-умолчанию
     private int days = 7;
 
     //MVP
@@ -34,6 +34,9 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     //Rx
     private Disposable ratesSubscription;
     private Disposable currencySubscription;
+
+    //Имя выбранной валюты
+    String selectedCurrencyName;
 
     private ToastHelper toaster = ToastHelper.getInstance();
 
@@ -46,20 +49,22 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     //Загружаем валюты из БД и передаём view на отрисовку
     @Override
     public void getCurrencies() {
+        selectedCurrencyName = mRepository.getSelected();
+        Log.d(TAG, "loading currencies");
         currencies = new ArrayList<>();
         currencySubscription = mRepository.loadCurrencies()
                 .subscribe(this::showCurrencies, throwable -> {
                     //getCurrencies();
                     Log.d(TAG, "problems with loading currencies bro");
-
                 });
     }
 
     //Загружаем историю курсов с сервера и передаём view на отрисовку
     @Override
     public void getRates() {
+        Log.d(TAG, "getRates");
         mView.showProgress();
-        Log.d(TAG, "showProgress");
+        Log.d(TAG, "showProgress; days: " + days);
         try {
             ratesSubscription = mRepository.loadRates(days, selectedCurrency.getName())
                     .subscribe(this::showRates, throwable -> {
@@ -70,13 +75,21 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
                     });
         } catch (NullPointerException e) {
             Log.d(TAG, e.getMessage());
+            //showCurrencies(currencies);
         }
     }
 
     //Изменился период на view
     @Override
     public void onPeriodChanged() {
+        Log.d(TAG, "onPeriodChanged()");
         days = mView.getDays();
+        Log.d(TAG, "now days are: " + days);
+        try {
+            //selectedCurrency = currencies.get(position);
+        } catch (IndexOutOfBoundsException e) {
+            Log.d(TAG, e.getMessage());
+        }
         if (selectedCurrency != null) {
             Log.d(TAG, days + " days for " + selectedCurrency.getName());
         }
@@ -88,16 +101,51 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     private void showCurrencies(List<Currency> currencies) {
         this.currencies = currencies;
         Log.d(TAG, currencies.toString());
-        selectedCurrency = currencies.get(0);
+        if (selectedCurrencyName == null) {
+            selectedCurrency = currencies.get(0);
+        } else {
+            for (Currency currency: currencies) {
+                if (currency.getName().equals(selectedCurrencyName)) {
+                    selectedCurrency = currency;
+                }
+            }
+        }
         selectedCurrency.setFilter(true);
         Log.d(TAG, "selected one: " + selectedCurrency.getName());
         getRates();
         mView.setAdapter(currencies);
+
+        /**
+        Log.d(TAG, "showCurrencies()");
+        this.currencies = currencies;
+        Log.d(TAG, currencies.toString());
+        try {
+            if (currencies != null) {
+                if (selectedCurrencyName != null) {
+                    Log.d(TAG, "selectedCurrency successfully loaded!");
+                    for (Currency currency : currencies) {
+                        if (currency.getName().equals(selectedCurrencyName)) {
+                            selectedCurrency = currency;
+                            selectedCurrency.setFilter(true);
+                        }
+                    }
+                } else {
+                    selectedCurrency = currencies.get(0);
+                    selectedCurrency.setFilter(true);
+                }
+                getRates();
+                mView.setAdapter(currencies);
+            }
+            } catch(IndexOutOfBoundsException e){
+                Log.d(TAG, e.getMessage());
+            }
+         **/
     }
+
 
      //Полученный список курсов переводим в LineGraphSeries (com.jjoe64.graphview.series.LineGraphSeries) и отдаём view на отрисовку
     private void showRates(ArrayList<Float> list) {
-
+        Log.d(TAG, "showRates()");
         DataPoint[] dataPoints = new DataPoint[list.size()];
         Calendar calendar = Calendar.getInstance();
 
@@ -115,6 +163,7 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
     //Выбираем избранную валюту для получения данных с сервера
     @Override
     public void setFavorite(Currency currency) {
+        Log.d(TAG, "setFavorite()");
         for (Currency curr: currencies) {
             if (!curr.isFilter()) {
 
@@ -126,16 +175,17 @@ public class AnalyticsPresenter implements AnalyticsContract.Presenter {
         selectedCurrency = currency;
         Log.d(TAG, "selected currency: " + selectedCurrency.getName());
         mView.refreshCurrencyList(currencies);
+        mRepository.setSelected(currency.getName());
     }
 
     @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach()");
         if (ratesSubscription != null) {
             ratesSubscription.dispose();
         }
         if (currencySubscription != null) {
             currencySubscription.dispose();
         }
-
     }
 }

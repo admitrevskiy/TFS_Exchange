@@ -141,7 +141,9 @@ public class HistoryFilterFragment extends Fragment implements HistoryFilterCont
     @Override
     public void setTimeSettings(int periodId, String dateFrom, String dateTo, String[] periods) {
         Log.d(TAG, "incoming settings: periodId " + periodId + "; dates: " + dateFrom + " and " + dateTo);
-
+        if (periodId == 3) {
+            enableDate();
+        }
         //Spinner для выбора периода и поля для ввода даты
         ArrayAdapter<String> selectPeriodAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_item, periods);
         selectPeriodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

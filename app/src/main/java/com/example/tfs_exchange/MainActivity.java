@@ -18,6 +18,7 @@ import com.example.tfs_exchange.fragments.HisroryFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 public class MainActivity extends FragmentActivity implements MainContract.View{
 
@@ -25,9 +26,7 @@ public class MainActivity extends FragmentActivity implements MainContract.View{
 
     private FragmentManager fragmentManager;
 
-    CurrencySelectFragment currencySelectFragment;
-    HisroryFragment historyFragment;
-    AnalyticsFragment analyticsFragment;
+    private Unbinder unbinder;
 
     MainContract.Presenter mPresenter;
 
@@ -41,11 +40,8 @@ public class MainActivity extends FragmentActivity implements MainContract.View{
         setContentView(R.layout.activity_main);
 
         fragmentManager = getSupportFragmentManager();
-        ButterKnife.bind(this);
+        unbinder = ButterKnife.bind(this);
         mPresenter = new MainPresenter(this);
-        currencySelectFragment = new CurrencySelectFragment();
-        historyFragment = new HisroryFragment();
-        analyticsFragment = new AnalyticsFragment();
 
         mPresenter.initFirstFragment(savedInstanceState);
 
@@ -76,6 +72,12 @@ public class MainActivity extends FragmentActivity implements MainContract.View{
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onDestroy() {
+        unbinder.unbind();
+        super.onDestroy();
     }
 }
 

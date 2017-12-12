@@ -16,21 +16,22 @@ import io.reactivex.Single;
 public interface ExchangeContract {
     interface View {
         void activateRate(double rate);
-        void activateRate(double rate, double amountFrom);
+        void activateRate(String amountFrom, String amountTo);
         void disactivateRate();
         void setCurrencies(String currencyFrom, String currencyTo);
-        void setRate(double rate);
+        void activateRate();
         void showDialog(String message);
         double getAmountFrom();
         double getAmountTo();
         void setCurrencyAmountFromEdit(String text);
         void setCurrencyAmountToEdit(String text);
+        void popBackStack();
     }
 
     interface Presenter {
         void subscribeRate(String currencyFrom, String currencyTo);
         void onDetach();
-        void getCurrenciesAndRate(Bundle bundle);
+        void getCurrenciesAndRate(Bundle bundle, Bundle savedInstanceState);
         void onExchange();
         void onAmountFromEdit(Editable s, android.view.View view);
         void onAmountToEdit(Editable s, android.view.View view);

@@ -25,10 +25,10 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     private ExchangeContract.View mView;
     private ExchangeContract.Repository mRepository;
 
-    //Примитивы b флаги
+    //Примитивы & флаги
     private long time, checkTime;
     private String currencyFrom, currencyTo;
-    private double amountFrom;
+    private double amountFrom, amountTo;
     private double rate;
     private boolean refresh;
 
@@ -43,7 +43,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     public ExchangePresenter(ExchangeContract.View mView) {
         this.mView = mView;
         this.mRepository = new ExchangeRepository();
-        checkTime = 5*60*1000;
+        checkTime = 5*1000;
     }
 
     //Получаем курс и передаем его view на отрисовку
@@ -81,20 +81,27 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
 
     //Достаём из бандла имена валют от предыдущего фрагмента и получаем курс
     @Override
-    public void getCurrenciesAndRate(Bundle bundle) {
-        if (bundle!= null) {
+    public void getCurrenciesAndRate(Bundle bundle, Bundle savedInstanceState) {
+        if (bundle != null) {
             try {
                 currencyFrom = bundle.getStringArray("currencies")[0];
                 currencyTo = bundle.getStringArray("currencies")[1];
                 mView.setCurrencies(currencyFrom, currencyTo);
-                subscribeRate(currencyFrom, currencyTo);
+                if (savedInstanceState != null) {
+                    refresh = true;
+                    subscribeRate(currencyFrom, currencyTo);
+                    mView.activateRate();
+                } else {
+                    subscribeRate(currencyFrom, currencyTo);
+                }
             } catch (NullPointerException e) {
-                Log.d(TAG, "problems with bundle: " + e.getMessage());
+                Log.d(TAG, e.getMessage());
             }
         } else {
-            Log.d(TAG, "problems with bundle");
-        }
+                Log.d(TAG, "problems with bundle: " );
+            }
     }
+
 
     //Нажата кнопка "Обменять"
     //Проверяем, сколько прошло времени
@@ -102,6 +109,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     //Если больше - получаем обновленный курс и предлагаем записатьа
     @Override
     public void onExchange() {
+        Log.d(TAG, "onExchange()");
         long now = new Date().getTime();
         if (checkTime(now, time)) {
             Log.d(TAG, "time is Ok");
@@ -113,25 +121,16 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
             exchange.setTime(dateAndTime[1]);
             exchange.setMillis(time.getTime()/1000);
             mRepository.setExchangeToDB(exchange);
+            mView.popBackStack();
         } else {
             try {
+                Log.d(TAG, "onExchange() shows dialog");
                 amountFrom = mView.getAmountFrom();
-                time = now;
-                rateSubscription =
-                        mRepository.loadRate(currencyFrom, currencyTo)
-                        .subscribe(apiResponse -> {
-                            rate = apiResponse.getRates().getRate();
-                            if (rate != 0) {
-                                mView.activateRate(rate, amountFrom);
-                                mView.showDialog(amountFrom + "  -  " + amountFrom*rate);
-                            } else {
-                                Log.d(TAG, " some problems with loading new rate");
-                            }
-                        }, throwable -> {
-                            Log.d(TAG, " connection problems");
-                            mView.disactivateRate();
-                        });
-                Log.d(TAG, "new Subscribe");
+                amountTo = mView.getAmountTo();
+                onDetach();
+                subscribeRate(currencyFrom, currencyTo);
+                mView.showDialog(amountFrom + "  -  " + amountTo);
+                mView.activateRate(String.valueOf(amountFrom), String.valueOf(amountTo));
             } catch (Exception e) {
                 Log.d(TAG, "trouble with new subscription");
             }

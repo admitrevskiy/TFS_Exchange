@@ -87,7 +87,7 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
         unbinder = ButterKnife.bind(this, analyticsFragmentRootView);
         mPresenter = new AnalyticsPresenter(this);
         mPresenter.getCurrencies();
-
+        Log.d(TAG, "days: " + days);
         choosePeriodGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -110,13 +110,14 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
             }
 
         });
-
+        Log.d(TAG, "onCreateView()");
         return analyticsFragmentRootView;
 
     }
 
     @Override
     public void setAdapter(List<Currency> currencies) {
+        Log.d(TAG, "setAdapter()");
         adapter = new CurrencyRecyclerListAdapter(currencies, new CurrencyRecyclerListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Currency currency) {
@@ -134,11 +135,13 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     @Override
     public int getDays() {
+        Log.d(TAG, "getDays(): " + days );
         return days;
     }
 
     @Override
     public void showProgress() {
+        Log.d(TAG, "showProgress()");
         recyclerView.setVisibility(View.GONE);
         choosePeriodGroup.setVisibility(View.GONE);
         graph.setVisibility(View.GONE);
@@ -148,6 +151,7 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     @Override
     public void hideProgress() {
+        Log.d(TAG, "hideProgress()");
         errorTextView.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
         choosePeriodGroup.setVisibility(View.VISIBLE);
@@ -157,6 +161,7 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     @Override
     public void handleError() {
+        Log.d(TAG, "handleError()");
         errorTextView.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.VISIBLE);
         choosePeriodGroup.setVisibility(View.VISIBLE);
@@ -166,18 +171,20 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     @Override
     public void refreshCurrencyList(List<Currency> currencies) {
+        Log.d(TAG, "refreshCurrencyList()");
         adapter.notifyDataSetChanged();
     }
 
 
     @Override
     public void onResume() {
-        super.onResume();
         Log.d(TAG, "onResume()");
+        super.onResume();
     }
 
     @Override
     public void plotGraph(LineGraphSeries<DataPoint> series, String label) {
+        Log.d(TAG, "plotGraph()");
         graph.getGridLabelRenderer().setVerticalAxisTitle(label);
         graph.removeAllSeries();
         graph.addSeries(series);
@@ -190,14 +197,22 @@ public class AnalyticsFragment extends Fragment implements AnalyticsContract.Vie
 
     @Override
     public void refreshGraph(){
+        Log.d(TAG, "refreshGraph()");
         graph.removeAllSeries();
     }
 
     @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach()");
         mPresenter.onDetach();
         unbinder.unbind();
         super.onDetach();
+    }
 
+
+    @Override
+    public void onStop() {
+        Log.d(TAG, "onStop()");
+        super.onStop();
     }
 }

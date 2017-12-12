@@ -38,6 +38,7 @@ import com.example.tfs_exchange.exchange.ExchangePresenter;
  */
 
 public class ExchangeFragment extends Fragment implements ExchangeContract.View {
+
     private static final String TAG = "ExchangeFragment";
 
     private FragmentManager fragmentManager;
@@ -46,7 +47,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
     private static ExchangeContract.Presenter mPresenter;
 
-    private double rate;
 
     @BindView(R.id.currency_from_name)
     TextView currencyFromName;
@@ -82,8 +82,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     @OnClick(R.id.exchange_button)
     void onSaveClick() {
         mPresenter.onExchange();
-        FragmentManager fm = getFragmentManager();
-        fm.popBackStack();
         Log.d(TAG, " button clicked");
     }
 
@@ -95,12 +93,13 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
 
 
 
+
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View exchangeFragmentRootView = inflater.inflate(R.layout.exchange_fragment, container, false);
         unbinder = ButterKnife.bind(this, exchangeFragmentRootView);
         disactivateRate();
         mPresenter = new ExchangePresenter(this);
-        mPresenter.getCurrenciesAndRate(getArguments());
+        mPresenter.getCurrenciesAndRate(getArguments(), savedInstanceState);
         fragmentManager = getFragmentManager();
         Log.d(TAG, "onCreateView");
         return exchangeFragmentRootView;
@@ -116,22 +115,31 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         currencyAmountToEdit.setEnabled(true);
         exchangeButton.setText("ОБМЕНЯТЬ");
         exchangeButton.setEnabled(true);
-        setRate(rate);
-        Log.d(TAG, "rate activated");
+        Log.d(TAG, "rate was activated");
     }
 
     @Override
-    public void activateRate(double rate, double amountFrom) {
+    public void activateRate(String amountFrom, String amountTo) {
         progressBar.setVisibility(View.GONE);
-        currencyAmountFromEdit.setText(String.valueOf(amountFrom));
+        setCurrencyAmountFromEdit(amountFrom);
         currencyAmountFromEdit.setEnabled(true);
-        currencyAmountToEdit.setText(String.format("%.4f", amountFrom*rate));
+        setCurrencyAmountToEdit(amountTo);
         currencyAmountToEdit.setEnabled(true);
         exchangeButton.setText("ОБМЕНЯТЬ");
         exchangeButton.setEnabled(true);
-        setRate(rate);
-        Log.d(TAG, "rate activated");
+        Log.d(TAG, "rate was activated");
     }
+
+    @Override
+    public void activateRate() {
+        progressBar.setVisibility(View.GONE);
+        currencyAmountFromEdit.setEnabled(true);
+        currencyAmountToEdit.setEnabled(true);
+        exchangeButton.setText("ОБМЕНЯТЬ");
+        exchangeButton.setEnabled(true);
+        Log.d(TAG, "rate was activated");
+    }
+
 
     @Override
     public void disactivateRate() {
@@ -167,10 +175,6 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
         return Double.parseDouble(currencyAmountToEdit.getText().toString());
     }
 
-    @Override
-    public void setRate(double rate) {
-        this.rate = rate;
-    }
 
     public static class ExchangeDialogFragment extends DialogFragment {
 
@@ -226,6 +230,11 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     @Override
     public void setCurrencyAmountToEdit(String text) {
         currencyAmountToEdit.setText(text);
+    }
+
+    @Override
+    public void popBackStack() {
+        getFragmentManager().popBackStack();
     }
 
     @Override

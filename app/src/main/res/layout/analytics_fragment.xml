@@ -7,7 +7,7 @@
     android:fillViewport="true"
     android:scrollbars="none" >
 
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,12 +17,7 @@
         android:id="@+id/analytics_recycler"
         android:layout_width="match_parent"
         android:layout_height="120dip"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_alignParentTop="true" />
 
     <ProgressBar
         android:id="@+id/graph_progress_bar"
@@ -30,10 +25,6 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:minHeight="60dp"
         android:minWidth="60dp"
         android:indeterminateTint="@color/menuYellow"
@@ -50,7 +41,8 @@
         android:background="#C0C0C0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/analytics_recycler" />
+        app:layout_constraintTop_toBottomOf="@+id/analytics_recycler"
+        android:layout_below="@+id/analytics_recycler"/>
 
     <RadioGroup
         android:id="@+id/choose_period"
@@ -58,8 +50,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_below="@+id/graph"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
         android:checkedButton = "@+id/week_button">
 
@@ -94,16 +87,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/connection_error"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:textColor="@color/colorText"
-        android:textSize="32sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:textSize="32sp" />
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>
 </ScrollView>

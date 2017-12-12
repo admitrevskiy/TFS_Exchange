@@ -18,10 +18,9 @@ public interface AnalyticsContract {
     interface Presenter {
         void getCurrencies();
         void getRates();
-        void setFavorite(Currency currenc);
+        void setFavorite(Currency currency);
         void onPeriodChanged();
         void onDetach();
-
     }
 
     interface View {
@@ -33,12 +32,13 @@ public interface AnalyticsContract {
         void showProgress();
         void hideProgress();
         void handleError();
-
     }
 
     interface Repository {
         Observable<List<Currency>> loadCurrencies();
         Single<ArrayList<Float>> loadRates(int days, String currencyName);
         void refreshApi();
+        void setSelected(String currencyName);
+        String getSelected();
     }
 }

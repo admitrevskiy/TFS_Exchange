@@ -1,9 +1,14 @@
 package com.example.tfs_exchange.analytics;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.tfs_exchange.ExchangerApp;
+import com.example.tfs_exchange.R;
 import com.example.tfs_exchange.api.FixerApi;
 import com.example.tfs_exchange.api.FixerApiHelper;
 import com.example.tfs_exchange.comparators.FavoriteComparator;
@@ -48,6 +53,12 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
     private static final String FAVORITE = "favorite";
     private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC, " + FAVORITE;
 
+    private SharedPreferences sharedPreferences;
+    private Context context = ExchangerApp.getContext();
+    private Resources resources = ExchangerApp.getAppResources();
+    String selectedCurrencyName;
+
+
     FixerApi api = new FixerApiHelper().createApi();
 
     //Загружаем валюты из БД и сразу сортируем
@@ -66,7 +77,7 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
     //Загружаем курсы с сервера
     @Override
     public Single<ArrayList<Float>> loadRates(int days, String currencyName) {
-
+        Log.d(TAG, "load rates for " + currencyName + " for " + days + " days");
         return Flowable.fromArray(generateDates(days))
                 .subscribeOn(Schedulers.io())
                 .flatMapSingle(date -> (api.getRateByDate(date, currencyName, "EUR")))
@@ -88,6 +99,27 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
         } else {
             api = new FixerApiHelper().createApi();
         }
+    }
+
+    @Override
+    public void setSelected(String currencyName) {
+        sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_currency_file), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.putString(resources.getString(R.string.selected_currency), currencyName);
+        editor.apply();
+        Log.d(TAG, "saved selectedCurrency");
+    }
+
+    @Override
+    public String getSelected() {
+        Log.d(TAG, "try to load selectedCurrency");
+        sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_currency_file), Context.MODE_PRIVATE);
+        if (sharedPreferences.contains(resources.getString(R.string.selected_currency))) {
+            selectedCurrencyName = sharedPreferences.getString(resources.getString(R.string.selected_currency), null);
+            Log.d(TAG, "success!");
+        }
+        return selectedCurrencyName;
     }
 
     //Сортировка перед передачей Presenter'у
