@@ -1,6 +1,8 @@
 package com.example.tfs_exchange.exchange;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.view.View;
 
 import com.example.tfs_exchange.api.ApiResponse;
 import com.example.tfs_exchange.model.Exchange;
@@ -21,6 +23,8 @@ public interface ExchangeContract {
         void showDialog(String message);
         double getAmountFrom();
         double getAmountTo();
+        void setCurrencyAmountFromEdit(String text);
+        void setCurrencyAmountToEdit(String text);
     }
 
     interface Presenter {
@@ -28,6 +32,8 @@ public interface ExchangeContract {
         void onDetach();
         void getCurrenciesAndRate(Bundle bundle);
         void onExchange();
+        void onAmountFromEdit(Editable s, android.view.View view);
+        void onAmountToEdit(Editable s, android.view.View view);
     }
 
     interface Repository {

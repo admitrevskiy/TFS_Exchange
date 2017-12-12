@@ -1,7 +1,9 @@
 package com.example.tfs_exchange.exchange;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
+import android.view.View;
 
 import com.example.tfs_exchange.model.Exchange;
 
@@ -23,11 +25,13 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     private ExchangeContract.View mView;
     private ExchangeContract.Repository mRepository;
 
-    //Примитивы и списки
-    private long time;
+    //Примитивы b флаги
+    private long time, checkTime;
     private String currencyFrom, currencyTo;
     private double amountFrom;
     private double rate;
+    private boolean refresh;
+
 
     //Rx
     private Disposable rateSubscription;
@@ -39,6 +43,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     public ExchangePresenter(ExchangeContract.View mView) {
         this.mView = mView;
         this.mRepository = new ExchangeRepository();
+        checkTime = 5*60*1000;
     }
 
     //Получаем курс и передаем его view на отрисовку
@@ -50,11 +55,16 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
                 .subscribe(apiResponse -> {
                     rate = apiResponse.getRates().getRate();
                     if (rate != 0) {
-                        mView.activateRate(rate);
+                        if (!refresh) {
+                            mView.activateRate(rate);
+                            refresh = true;
+                        } else {
+                            Log.d(TAG, "Rate was refreshed");
+                            time = new Date().getTime();
+                        }
                     } else {
                         Log.d(TAG, " some problems with loading rates");
                     }
-
                 }, throwable -> {
                     Log.d(TAG, " connection problems");
                     mView.disactivateRate();
@@ -129,10 +139,33 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
     }
 
     protected boolean checkTime(long now, long time) {
-        if (now - time < 5*60*1000) {
+        if (now - time < checkTime) {
+            Log.d(TAG, "time is Ok");
             return true;
         } else {
+            Log.d(TAG, "time is not Ok, refresh rate");
             return false;
+        }
+    }
+
+    @Override
+    public void onAmountFromEdit(Editable s, View view) {
+        if (!s.toString().equals("") && view.hasFocus()) {
+            if (!checkTime(new Date().getTime(), time)) {
+                subscribeRate(currencyFrom, currencyTo);
+            }
+            mView.setCurrencyAmountToEdit(String.format( "%.4f", (Double.parseDouble(s.toString()) * rate)));
+        }
+
+    }
+
+    @Override
+    public void onAmountToEdit(Editable s, View view) {
+        if (!s.toString().equals("") && view.hasFocus()) {
+            if (!checkTime(new Date().getTime(), time)) {
+                subscribeRate(currencyFrom, currencyTo);
+            }
+            mView.setCurrencyAmountFromEdit(String.format( "%.4f", (Double.parseDouble(s.toString()) / rate)));
         }
     }
 }

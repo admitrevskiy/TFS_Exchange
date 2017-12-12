@@ -69,17 +69,13 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     //Слушатель изменения в текстовом поле from
     @OnTextChanged(value = R.id.currency_from_edit, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
     public void fromCurrencyAmountChanged(Editable s) {
-        if (!s.toString().equals("") && currencyAmountFromEdit.hasFocus()) {
-            currencyAmountToEdit.setText(String.format( "%.4f", (Double.parseDouble(s.toString()) / rate)));
-        }
+        mPresenter.onAmountFromEdit(s, currencyAmountFromEdit);
     }
 
     //Слушатель изменения в текстовом поле to
     @OnTextChanged(value = R.id.currency_to_edit, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
     public void toCurrencyAmountChanged(Editable s) {
-        if (!s.toString().equals("") && currencyAmountToEdit.hasFocus()) {
-            currencyAmountFromEdit.setText(String.format( "%.4f", (Double.parseDouble(s.toString()) / rate)));
-        }
+        mPresenter.onAmountToEdit(s, currencyAmountToEdit);
     }
 
     //Слушатель нажатия на кнопку из ButterKnife
@@ -223,11 +219,22 @@ public class ExchangeFragment extends Fragment implements ExchangeContract.View 
     }
 
     @Override
+    public void setCurrencyAmountFromEdit(String text) {
+        currencyAmountFromEdit.setText(text);
+    }
+
+    @Override
+    public void setCurrencyAmountToEdit(String text) {
+        currencyAmountToEdit.setText(text);
+    }
+
+    @Override
     public void onPause() {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.addToBackStack(TAG);
         super.onPause();
     }
+
 
 
 }
