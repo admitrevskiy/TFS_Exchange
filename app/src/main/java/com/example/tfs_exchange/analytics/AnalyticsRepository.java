@@ -91,6 +91,7 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    //Обновляем api
     @Override
     public void refreshApi() {
         if (api != null) {
@@ -101,6 +102,7 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
         }
     }
 
+    //Записываем выбранную валюту в sharedPrefs
     @Override
     public void setSelected(String currencyName) {
         sharedPreferences = context.getSharedPreferences(resources.getString(R.string.preference_currency_file), Context.MODE_PRIVATE);
@@ -111,6 +113,7 @@ public class AnalyticsRepository implements AnalyticsContract.Repository {
         Log.d(TAG, "saved selectedCurrency");
     }
 
+    //Достаем выбранную валюту из sharedPrefs
     @Override
     public String getSelected() {
         Log.d(TAG, "try to load selectedCurrency");

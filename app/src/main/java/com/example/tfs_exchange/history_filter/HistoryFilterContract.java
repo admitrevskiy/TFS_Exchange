@@ -1,6 +1,5 @@
 package com.example.tfs_exchange.history_filter;
 
-import android.os.Bundle;
 import android.widget.TextView;
 
 import com.example.tfs_exchange.model.Currency;

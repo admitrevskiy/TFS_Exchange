@@ -15,9 +15,7 @@ import com.example.tfs_exchange.db.DBHelper;
 import com.example.tfs_exchange.model.Currency;
 import com.example.tfs_exchange.model.Settings;
 
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 

@@ -137,6 +137,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
         }
     }
 
+    //Проверяем, что прошло не более 5 мин
     protected boolean checkTime(long now, long time) {
         if (now - time < checkTime) {
             Log.d(TAG, "time is Ok");
@@ -147,6 +148,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
         }
     }
 
+    //Изменяется верхнее поле => нужно менять значение в нижнем поле
     @Override
     public void onAmountFromEdit(Editable s, View view) {
         if (!s.toString().equals("") && view.hasFocus()) {
@@ -157,7 +159,7 @@ public class ExchangePresenter implements ExchangeContract.Presenter {
         }
 
     }
-
+    //Изменяется нижнее поле => нужно менять значение в верхнем поле
     @Override
     public void onAmountToEdit(Editable s, View view) {
         if (!s.toString().equals("") && view.hasFocus()) {

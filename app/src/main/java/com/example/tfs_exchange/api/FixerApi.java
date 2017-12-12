@@ -1,6 +1,5 @@
 package com.example.tfs_exchange.api;
 
-import com.example.tfs_exchange.api.ApiResponse;
 
 import io.reactivex.Single;
 import retrofit2.http.GET;

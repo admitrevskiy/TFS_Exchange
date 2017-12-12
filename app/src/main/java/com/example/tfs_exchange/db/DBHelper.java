@@ -2,17 +2,11 @@ package com.example.tfs_exchange.db;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-
 import com.example.tfs_exchange.ExchangerApp;
-import com.example.tfs_exchange.model.Currency;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * Created by pusya on 16.10.17.
@@ -51,9 +45,6 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String FAVORITE = "favorite";
     private static final String FILTER = "filter";
 
-    private static final String TABLE_RATES_NAME = "rates_name";
-
-
     private static final String CURRENCY_TABLE = "create table " + TABLE_CURRENCY_NAME + " ("
             + CURRENCY_BASE + " string primary key, "
             + LAST_USED + " integer, "
@@ -72,7 +63,6 @@ public class DBHelper extends SQLiteOpenHelper {
             + EXCHANGE_MILLIS + " integer "
             + ");";
 
-    private static final String GET_ALL_CURRENCIES = "SELECT * FROM " + TABLE_CURRENCY_NAME + " ORDER BY " + LAST_USED + " DESC";
 
     @Override
     public void onCreate(SQLiteDatabase mySQLiteDB) {
@@ -92,44 +82,6 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
-    }
-
-    public List<Currency> loadAll() {
-        List<Currency> currencies = new ArrayList<>();
-        Currency currency;
-        try (SQLiteDatabase db = this.getReadableDatabase();) {
-            try (Cursor cursor = db.rawQuery(GET_ALL_CURRENCIES, null);) {
-                if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                    //Находим индексы колонок
-                    int baseColId = cursor.getColumnIndex("currency_base");
-                    int lastUsedColId = cursor.getColumnIndex("last_used");
-                    int favoriteColId = cursor.getColumnIndex("favorite");
-
-                    do {
-                        //Создаем объект типа Currency и присваиваем ему значения из БД
-                        currency = new Currency();
-                        currency.setName(cursor.getString(baseColId));
-                        currency.setLastUse(cursor.getInt(lastUsedColId));
-                        int favorite = cursor.getInt(favoriteColId);
-
-                        //В SQLite нет типа boolean, поэтому НЕ избранные валюты имеют в колонке favorite 0, а избранные 1
-                        if (favorite == 0) {
-                            currencies.add(currency);
-                            currency.setFavorite(false);
-                            Log.d(TAG, " " + currency.getName() + " was added, last use: " + currency.getLastUse());
-                        } else {
-                            currencies.add(0, currency);
-                            currency.setFavorite(true);
-                        }
-
-                        //Добавляем валюту в List с валютами
-
-                    } while (cursor.moveToNext());
-                }
-                //sortCurrencies();
-            }
-        }
-        return currencies;
     }
 
     //В конструктор передаем контекст, имя базы данных, CursorFactory (не используется, поэтому null), и версию базы данных

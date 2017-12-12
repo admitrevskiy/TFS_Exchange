@@ -2,7 +2,6 @@ package com.example.tfs_exchange.exchange;
 
 import android.os.Bundle;
 import android.text.Editable;
-import android.view.View;
 
 import com.example.tfs_exchange.api.ApiResponse;
 import com.example.tfs_exchange.model.Exchange;

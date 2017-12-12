@@ -1,8 +1,5 @@
 package com.example.tfs_exchange.api;
 
-import com.google.gson.annotations.SerializedName;
-
-import java.util.Map;
 
 /**
  * Created by pusya on 07.11.17.

@@ -33,7 +33,9 @@ import butterknife.Unbinder;
 public class HisroryFragment extends Fragment implements HistoryContract.View {
 
     private final static String TAG = "HistoryFragment";
+
     private HistoryContract.Presenter mPresenter;
+
     private Unbinder unbinder;
 
     private HistoryRecyclerListAdapter adapter;

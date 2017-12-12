@@ -12,9 +12,6 @@ import android.view.MenuItem;
 
 import com.example.tfs_exchange.Main.MainContract;
 import com.example.tfs_exchange.Main.MainPresenter;
-import com.example.tfs_exchange.fragments.AnalyticsFragment;
-import com.example.tfs_exchange.fragments.CurrencySelectFragment;
-import com.example.tfs_exchange.fragments.HisroryFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
